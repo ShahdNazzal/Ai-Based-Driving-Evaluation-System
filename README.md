@@ -117,17 +117,18 @@ The deployed system represents a significant leap forward in objective driving a
 
 
 
-
-
 ## Project Preview
 
 <p align="center">
-  <img src="public/i1.png" width="250"/>
-  <img src="public/i2.png" width="250"/>
-  <img src="public/i3.png" width="250"/>
+  <img src="public/i1.png" width="350"/>
+  <img src="public/i2.png" width="350"/>
 </p>
 
 <p align="center">
-  <img src="public/i4.png" width="250"/>
-  <img src="public/i5.png" width="250"/>
+  <img src="public/i3.png" width="350"/>
+  <img src="public/i4.png" width="350"/>
+</p>
+
+<p align="center">
+  <img src="public/i5.png" width="350"/>
 </p>
