@@ -113,3 +113,14 @@ The deployed system represents a significant leap forward in objective driving a
 1.  **Examiner Biometric Login:** Implement a secondary authentication layer for the manual grading phase to cryptographically link the 35 manual marks to the specific examining officer.
 2.  **Edge Computing Integration:** Migrate the AI models to local edge servers within the testing facility to eliminate dependency on external cloud availability and internet latency.
 3.  **Predictive Analytics:** Utilize the archived raw JSON data to train predictive models that can identify common failure patterns across the population, allowing the traffic department to adjust its theoretical training curriculums proactively.
+
+
+
+
+## Project Preview
+
+<img src="public/i1.png" width="400"/>
+<img src="public/i2.png" width="400"/>
+<img src="public/i3.png" width="400"/>
+<img src="public/i4.png" width="400"/>
+<img src="public/i5.png" width="400"/>
