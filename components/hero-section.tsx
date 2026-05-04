@@ -69,7 +69,7 @@ export function HeroSection() {
             <Car className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="text-lg font-bold text-background">
-            درّبني
+           ــةROXAرخـصـ
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -172,6 +172,55 @@ export function HeroSection() {
           ))}
         </div>
       </div>
+
+
+
+
+
+
+
+
+
+
+      {/* Traffic Accidents Dashboard CTA */}
+      <div className="relative z-10 mx-auto max-w-6xl px-6 pb-24">
+        <Link
+          href="https://app.powerbi.com/reportEmbed?reportId=e2714232-679f-487e-8730-a8dd120b2817&autoAuth=true&ctid=e57f8beb-ac80-4205-b339-55669ee1a715" 
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative flex overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-px backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10"
+        >
+          <div className="flex w-full flex-col items-center justify-between gap-6 rounded-2xl bg-black/60 p-8 backdrop-blur-md md:flex-row md:gap-12">
+            <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
+                <BarChart3 className="h-7 w-7 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-white">
+                  Traffic Accidents Dashboard
+                </h3>
+                <p className="mt-2 max-w-md text-base text-white/50">
+                  Explore interactive analytics and geographic insights regarding traffic incidents across Jordan.
+                </p>
+              </div>
+            </div>
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-all group-hover:border-primary/50 group-hover:bg-primary/10">
+              <ArrowRight className="h-5 w-5 text-white/70 transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+            </div>
+          </div>
+        </Link>
+      </div>
+
+
+
+
+
+
+
+      
+    
+
+
     </div>
   )
 }

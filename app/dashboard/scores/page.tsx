@@ -9,6 +9,50 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { format } from "date-fns"
 
+// Activity sections matching the dashboard
+const ACTIVITY_SECTIONS = [
+  { key: "seatbelt", label: "Seatbelt", max: 2, section: "Readiness" },
+  { key: "behavior", label: "Behavior", max: 2, section: "Readiness" },
+  { key: "seat_adjust", label: "Seat Adjust", max: 2, section: "Readiness" },
+  { key: "mirror_adjust", label: "Mirror Adjust", max: 2, section: "Readiness" },
+  { key: "start_move", label: "Start Move", max: 2, section: "Readiness" },
+  { key: "surroundings", label: "Surroundings", max: 3, section: "Control" },
+  { key: "positioning", label: "Positioning", max: 4, section: "Control" },
+  { key: "gear", label: "Gear", max: 4, section: "Control" },
+  { key: "steering", label: "Steering", max: 4, section: "Control" },
+  { key: "lane_keeping", label: "Lane Keeping", max: 4, section: "Turns" },
+  { key: "turning", label: "Turning", max: 4, section: "Turns" },
+  { key: "sign_awareness", label: "Sign Awareness", max: 4, section: "Turns" },
+  { key: "indicator_turn", label: "Indicator Turn", max: 3, section: "Turns" },
+  { key: "traffic_aware", label: "Traffic Awareness", max: 4, section: "Traffic" },
+  { key: "ground_marks", label: "Ground Marks", max: 4, section: "Traffic" },
+  { key: "intersections", label: "Intersections", max: 4, section: "Traffic" },
+  { key: "indicator", label: "Indicator Rules", max: 3, section: "Traffic" },
+  { key: "overtake_place", label: "Overtake Place", max: 3, section: "Overtaking" },
+  { key: "overtake_signal", label: "Overtake Signal", max: 2, section: "Overtaking" },
+  { key: "overtake_watch", label: "Overtake Watch", max: 3, section: "Overtaking" },
+  { key: "overtake_return", label: "Overtake Return", max: 2, section: "Overtaking" },
+  { key: "normal_stop", label: "Normal Stop", max: 2, section: "Stopping" },
+  { key: "sudden_stop", label: "Sudden Stop", max: 3, section: "Stopping" },
+  { key: "intersect_safety", label: "Intersect Safety", max: 3, section: "Stopping" },
+  { key: "stop_compliance", label: "Stop Compliance", max: 2, section: "Stopping" },
+  { key: "pedestrians", label: "Pedestrians", max: 4, section: "Elements" },
+  { key: "vehicles", label: "Vehicles", max: 4, section: "Elements" },
+  { key: "road_env", label: "Road Env", max: 4, section: "Elements" },
+  { key: "obstacles", label: "Obstacles", max: 3, section: "Elements" },
+  { key: "parking_safe_stop", label: "Parking Safe Stop", max: 2, section: "Parking" },
+  { key: "parking_alignment", label: "Parking Alignment", max: 3, section: "Parking" },
+  { key: "reverse_look", label: "Reverse Look", max: 2, section: "Parking" },
+  { key: "reverse_watch", label: "Reverse Watch", max: 3, section: "Parking" },
+]
+
+function getScoreColor(score: number, max: number): string {
+  const pct = (score / max) * 100
+  if (pct >= 75) return "text-emerald-500"
+  if (pct >= 50) return "text-amber-500"
+  return "text-red-500"
+}
+
 export default async function ScoresPage() {
   const supabase = await createClient()
   const {
@@ -77,10 +121,10 @@ export default async function ScoresPage() {
                       </span>
                       <span
                         className={`text-xs font-semibold ${
-                          s.score >= 50 ? "text-accent" : "text-destructive"
+                          s.score >= 85 ? "text-emerald-500" : "text-destructive"
                         }`}
                       >
-                        {s.score >= 50 ? "PASSED" : "FAILED"}
+                        {s.score >= 85 ? "PASSED" : "FAILED"}
                       </span>
                     </CardTitle>
                   </CardHeader>
@@ -92,6 +136,7 @@ export default async function ScoresPage() {
                       value={s.score}
                       className="mt-2 h-1.5"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">Pass threshold: 85/100</p>
                   </CardContent>
                 </Card>
               ))}
@@ -115,29 +160,57 @@ export default async function ScoresPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               {practicalGrades.map((g) => (
                 <Card key={g.id} className="border-border bg-card">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-muted-foreground">
-                      {format(new Date(g.created_at), "MMM d, yyyy")}
+                    <CardTitle className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>{format(new Date(g.created_at), "MMM d, yyyy")}</span>
+                      <span className={`text-xs font-semibold ${g.total_score >= 75 ? "text-emerald-500" : "text-destructive"}`}>
+                        {g.total_score >= 75 ? "PASSED" : "FAILED"}
+                      </span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="flex flex-col gap-3">
-                    <div className="text-3xl font-bold text-card-foreground">
-                      {g.total_score}/100
+                  <CardContent className="flex flex-col gap-4">
+                    {/* Total Score */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-semibold text-foreground">Total Score</span>
+                      <span className="text-2xl font-bold text-foreground">{g.total_score}/100</span>
                     </div>
-                    {[
-                      { label: "Parking", value: g.parking_score },
-                      { label: "Speed", value: g.speed_score },
-                      { label: "Seatbelt", value: g.seatbelt_score },
-                      { label: "Lane Control", value: g.lane_score },
-                    ].map((item) => (
-                      <div key={item.label} className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">{item.label}</span>
-                        <span className="font-medium text-card-foreground">{item.value}/25</span>
+                    <Progress value={g.total_score} className="h-2" />
+                    
+                    {/* AI vs Manual breakdown */}
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      <div className="bg-violet-500/10 rounded-lg p-3">
+                        <p className="text-xs text-muted-foreground">AI Assessment</p>
+                        <p className="text-lg font-bold text-violet-500">{g.ai_total_score}/65</p>
                       </div>
-                    ))}
+                      <div className="bg-orange-500/10 rounded-lg p-3">
+                        <p className="text-xs text-muted-foreground">Manual Assessment</p>
+                        <p className="text-lg font-bold text-orange-500">{g.manual_total_score}/35</p>
+                      </div>
+                    </div>
+
+                    {/* Detailed Breakdown */}
+                    <div className="mt-2">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                        Detailed Breakdown
+                      </p>
+                      <div className="max-h-64 overflow-y-auto space-y-1">
+                        {ACTIVITY_SECTIONS.map((section) => {
+                          const scoreKey = `${section.key}_score` as keyof typeof g
+                          const score = (g as any)[scoreKey] ?? 0
+                          return (
+                            <div key={section.key} className="flex items-center justify-between text-xs py-1 border-b border-border/50 last:border-0">
+                              <span className="text-muted-foreground">{section.label}</span>
+                              <span className={`font-medium ${getScoreColor(score, section.max)}`}>
+                                {score}/{section.max}
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -182,6 +255,7 @@ export default async function ScoresPage() {
                       value={f.final_grade}
                       className="mt-2 h-1.5"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">Pass threshold: 75/100</p>
                   </CardContent>
                 </Card>
               ))}
