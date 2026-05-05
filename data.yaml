@@ -1,0 +1,15 @@
+train: dataset/images/train
+val: dataset/images/val
+
+nc: 8
+
+names: [
+  "person",
+  "car",
+  "traffic_light",
+  "stop_sign",
+  "no_entry",
+  "speed_limit",
+  "pedestrian_crossing",
+  "speed_bump"
+]
