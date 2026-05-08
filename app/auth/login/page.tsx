@@ -3,12 +3,13 @@
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
-import { Car, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { signIn } from "@/app/auth/actions"
+import { CarFront, Loader2 } from "lucide-react"
+
 import { useFormStatus } from "react-dom"
 
 function SubmitButton() {
@@ -35,7 +36,7 @@ function LoginForm() {
       <Card className="relative z-10 w-full max-w-md border-background/10 bg-background shadow-2xl">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <Car className="h-6 w-6 text-primary-foreground" />
+            <CarFront className="h-6 w-6 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl font-bold text-card-foreground">
             Welcome Back

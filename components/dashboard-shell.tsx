@@ -6,7 +6,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-  Car,
+  CarFront,
   LayoutDashboard,
   BookOpen,
   Calendar,
@@ -24,13 +24,18 @@ import { signOut } from "@/app/auth/actions"
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/training", label: "Theory Training", icon: BookOpen },
-  { href: "/dashboard/test-dates", label: "Test Dates", icon: Calendar },
-  { href: "/dashboard/scores", label: "My Scores", icon: BarChart3 },
   { href: "/dashboard/practical", label: "Practical Test", icon: Camera },
+  { href: "/dashboard/test-dates", label: "Test Dates", icon: Calendar },
   { href: "/dashboard/game", label: "Book a Driving Instructor", icon: Phone },
-  { href: "/dashboard/book", label: "The Book", icon: BookMarked },
+
+  { href: "/dashboard/training", label: "Theory Training", icon: BookOpen },
+
+  { href: "/dashboard/scores", label: "My Scores", icon: BarChart3 },
+  { href: "/dashboard/analysis", label: "Driving Analysis", icon: BarChart3 },
+
+  { href: "/dashboard/book", label: "Learning resources", icon: BookMarked },
   { href: "/dashboard/game2", label: "Driving Game", icon: Gamepad2 },
+
 ]
 
 export function DashboardShell({
@@ -76,7 +81,7 @@ export function DashboardShell({
         <div className="flex h-16 items-center justify-between border-b border-border px-4">
           <Link href="/dashboard" className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <Car className="h-4 w-4 text-primary-foreground" />
+              <CarFront className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="text-base font-bold text-card-foreground">
              ROXA
@@ -108,7 +113,7 @@ export function DashboardShell({
                   <Link
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors ${
                       isActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-secondary hover:text-card-foreground"
@@ -143,7 +148,7 @@ export function DashboardShell({
               className="w-full justify-start gap-2 text-muted-foreground hover:text-destructive"
               size="sm"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-5 w-5"/>
               Sign Out
             </Button>
           </form>

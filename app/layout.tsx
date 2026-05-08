@@ -5,6 +5,9 @@ import { Toaster } from "sonner"
 
 import "./globals.css"
 
+import ChatBubble from "@/components/ChatBubble";
+
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -35,10 +38,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${spaceMono.variable}`}>
+      
+      
       <body className="font-sans antialiased">
-        {children}
-        <Toaster position="top-right" richColors />
-      </body>
+  {children}
+  <Toaster position="top-right" richColors />
+
+  {/* 💬 الشات بوت */}
+  <ChatBubble />
+</body>
+
+
     </html>
   )
 }
+
+
+
