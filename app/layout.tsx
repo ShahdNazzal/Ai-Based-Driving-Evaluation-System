@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   title: "Driver Skill Assessment",
   description:
     "Professional driving assessment platform for Jordanian drivers. Theory tests, practical evaluations, and interactive training.",
+
+   openGraph: {
+  images: ["/og.png"]
+    },
 }
 
 export const viewport: Viewport = {
