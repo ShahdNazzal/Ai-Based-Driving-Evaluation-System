@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -9,37 +9,18 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
 
-export const dynamic = "force-dynamic"
-
 export default function UpdatePasswordPage() {
   const router = useRouter()
 
-  const [ready, setReady] = useState(false)
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [message, setMessage] = useState("")
 
-  useEffect(() => {
-    const supabase = createClient()
-
-    const hash = window.location.hash
-    if (hash.includes("error=access_denied")) {
-      router.push("/auth/forgot-password")
-      return
-    }
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setReady(true)
-      }
-    })
-    return () => subscription.unsubscribe()
-  }, [])
-
   async function handleUpdatePassword(e: React.FormEvent) {
     e.preventDefault()
+
     setError("")
     setMessage("")
 
@@ -56,7 +37,10 @@ export default function UpdatePasswordPage() {
     setLoading(true)
 
     const supabase = createClient()
-    const { error } = await supabase.auth.updateUser({ password })
+
+    const { error } = await supabase.auth.updateUser({
+      password,
+    })
 
     if (error) {
       setError(error.message)
@@ -65,17 +49,10 @@ export default function UpdatePasswordPage() {
     }
 
     setMessage("Password updated successfully.")
+
     setTimeout(() => {
       router.push("/auth/login")
     }, 1500)
-  }
-
-  if (!ready) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-foreground">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
   }
 
   return (
