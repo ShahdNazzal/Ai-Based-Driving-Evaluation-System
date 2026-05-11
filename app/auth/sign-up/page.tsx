@@ -81,7 +81,7 @@ function SignUpForm() {
                 id="full_name"
                 name="full_name"
                 type="text"
-                placeholder="Ahmad Al-Rasheed"
+                placeholder="Your Name"
                 required
               />
             </div>
