@@ -12,6 +12,7 @@ import {
   PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, ReferenceLine, AreaChart, Area,
+  LabelList, Cell,
 } from "recharts"
 import {
   TrendingUp, TrendingDown, Minus, AlertTriangle,
@@ -145,18 +146,46 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// RADAR DATA
+// CUSTOM SCORE HISTORY TOOLTIP (shows date + values clearly)
 // ─────────────────────────────────────────────────────────────
-function buildRadarData(attempts: Attempt[]) {
-  return SECTIONS.map((sec) => {
-    const maxTotal = sec.items.reduce((s, i) => s + i.max, 0)
-    const obj: any = { section: sec.label.split(" ")[0] }
-    attempts.forEach((a, idx) => {
-      const total = sec.items.reduce((s, i) => s + (a[`${i.key}_score`] ?? 0), 0)
-      obj[`Attempt ${idx + 1}`] = Math.round((total / maxTotal) * 100)
-    })
-    return obj
-  })
+function ScoreHistoryTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-sm min-w-[160px]">
+      <p className="font-bold text-slate-800 mb-2 border-b border-slate-100 pb-1">{label}</p>
+      {payload.map((p: any) => (
+        <div key={p.name} className="flex items-center justify-between gap-4 py-0.5">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: p.color }} />
+            <span className="text-slate-600">{p.name}</span>
+          </span>
+          <strong style={{ color: p.color }}>{p.value} pts</strong>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// SECTION COMPARISON TOOLTIP (for the new radar replacement)
+// ─────────────────────────────────────────────────────────────
+function SectionCompareTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-sm min-w-[180px]">
+      <p className="font-bold text-slate-800 mb-2 border-b border-slate-100 pb-1">{label}</p>
+      {payload.map((p: any) => (
+        <div key={p.name} className="flex items-center justify-between gap-4 py-0.5">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: p.color }} />
+            <span className="text-slate-600">{p.name}</span>
+          </span>
+          <strong style={{ color: p.color }}>{p.value}%</strong>
+        </div>
+      ))}
+      <p className="text-xs text-slate-400 mt-1.5 pt-1.5 border-t border-slate-100">Pass threshold: 75%</p>
+    </div>
+  )
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -170,7 +199,6 @@ function buildRecommendations(latest: Attempt, all: Attempt[]) {
     const p = pct(score, item.max)
 
     if (p < 50) {
-      // Check if it's a recurring weakness
       const weakCount = all.filter((a) => pct(a[`${item.key}_score`] ?? 0, item.max) < 50).length
       recs.push({
         icon: weakCount >= 2 ? AlertTriangle : Target,
@@ -183,7 +211,6 @@ function buildRecommendations(latest: Attempt, all: Attempt[]) {
     }
   })
 
-  // Sort: high → medium → low, take top 5
   return recs
     .sort((a, b) => (a.severity === "high" ? -1 : 1))
     .slice(0, 5)
@@ -199,6 +226,32 @@ function driverProfile(avg: number, trend: number, consistency: number) {
   if (consistency > 15) return { label: "Inconsistent Driver", emoji: "⚡", color: "text-amber-600", bg: "bg-amber-50 border-amber-200" }
   if (avg < 55) return { label: "Needs Practice", emoji: "🎯", color: "text-red-600", bg: "bg-red-50 border-red-200" }
   return { label: "Developing Driver", emoji: "🚗", color: "text-slate-600", bg: "bg-slate-50 border-slate-200" }
+}
+
+// ─────────────────────────────────────────────────────────────
+// CUSTOM DOT FOR SCORE HISTORY
+// ─────────────────────────────────────────────────────────────
+function ScoreDot(props: any) {
+  const { cx, cy, value, stroke } = props
+  if (!cx || !cy) return null
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={5} fill={stroke} stroke="white" strokeWidth={2} />
+    </g>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// CUSTOM LABEL FOR SCORE HISTORY DOTS
+// ─────────────────────────────────────────────────────────────
+function ScoreLabel(props: any) {
+  const { x, y, value, fill } = props
+  if (value == null) return null
+  return (
+    <text x={x} y={y - 10} fill={fill} fontSize={11} fontWeight={700} textAnchor="middle">
+      {value}
+    </text>
+  )
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -223,12 +276,11 @@ export function AnalysisDashboard({ attempts }: { attempts: Attempt[] }) {
 
   // Chart data
   const lineData = attempts.map((a, i) => ({
-    name: `#${i + 1}`,
+    name: `Attempt ${i + 1}`,
     date: format(new Date(a.created_at), "MMM d"),
     Total: a.total_score,
-    AI: a.ai_total_score,
-    Manual: a.manual_total_score,
-    Pass: 75,
+    "AI Score": a.ai_total_score,
+    "Manual Score": a.manual_total_score,
   }))
 
   const sectionBarData = SECTIONS.map((sec) => {
@@ -243,8 +295,24 @@ export function AnalysisDashboard({ attempts }: { attempts: Attempt[] }) {
     }
   })
 
-  const radarData = buildRadarData(attempts.slice(-3)) // last 3 attempts
-  const radarKeys = attempts.slice(-3).map((_, i) => `Attempt ${attempts.length - 2 + i - (Math.min(3, attempts.length) - 1 - i)}`)
+  // ── NEW: Section Comparison data (replaces radar) ──────────
+  // Shows last 3 attempts side-by-side per section as grouped bars
+  const last3 = attempts.slice(-3)
+  const sectionCompareData = SECTIONS.map((sec) => {
+    const maxTotal = sec.items.reduce((s, i) => s + i.max, 0)
+    const obj: any = { section: sec.label.replace(" & ", "\n& ") }
+    last3.forEach((a, idx) => {
+      const total = sec.items.reduce((s, it) => s + (a[`${it.key}_score`] ?? 0), 0)
+      const attemptNum = attempts.length - last3.length + idx + 1
+      obj[`Attempt ${attemptNum}`] = Math.round((total / maxTotal) * 100)
+    })
+    return obj
+  })
+  const compareKeys = last3.map((_, idx) => {
+    const attemptNum = attempts.length - last3.length + idx + 1
+    return `Attempt ${attemptNum}`
+  })
+  const compareColors = ["#6366f1", "#0ea5e9", "#10b981"]
 
   // Per-attempt section breakdown
   const sectionTrendData = SECTIONS.map((sec) => {
@@ -357,17 +425,30 @@ export function AnalysisDashboard({ attempts }: { attempts: Attempt[] }) {
           ))}
         </div>
 
-        {/* ── SCORE OVER TIME ─────────────────────── */}
+        {/* ── SCORE OVER TIME (improved with axis labels + data labels) ── */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 bg-violet-50 rounded-lg flex items-center justify-center">
               <Activity className="w-4 h-4 text-violet-600" />
             </div>
             <h2 className="font-semibold text-slate-800">Score History</h2>
             <span className="ml-auto text-xs text-slate-400">All attempts</span>
           </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={lineData}>
+          {/* Axis label hint row */}
+          <div className="flex items-center gap-6 mb-4 px-1">
+            <p className="text-xs text-slate-400">
+              <span className="font-semibold text-slate-600">Y-axis:</span> Total score out of 100
+            </p>
+            <p className="text-xs text-slate-400">
+              <span className="font-semibold text-slate-600">X-axis:</span> Attempt number
+            </p>
+            <span className="ml-auto flex items-center gap-1 text-xs text-emerald-600 font-medium">
+              <span className="inline-block w-4 border-t-2 border-dashed border-emerald-500" />
+              Pass line = 75 pts
+            </span>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={lineData} margin={{ top: 24, right: 16, bottom: 8, left: 0 }}>
               <defs>
                 <linearGradient id="totalGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
@@ -375,76 +456,193 @@ export function AnalysisDashboard({ attempts }: { attempts: Attempt[] }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#94a3b8" }} />
-              <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "#94a3b8" }} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: 12, color: "#64748b" }} />
-              <ReferenceLine y={75} stroke="#10b981" strokeDasharray="6 3" label={{ value: "Pass 75", fill: "#10b981", fontSize: 11 }} />
-              <Area type="monotone" dataKey="Total" stroke="#6366f1" strokeWidth={2.5} fill="url(#totalGrad)" dot={{ fill: "#6366f1", r: 4 }} />
-              <Line type="monotone" dataKey="AI" stroke="#0ea5e9" strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
-              <Line type="monotone" dataKey="Manual" stroke="#f59e0b" strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 12, fill: "#64748b", fontWeight: 500 }}
+                label={{ value: "Attempt Number", position: "insideBottom", offset: -2, fontSize: 12, fill: "#94a3b8" }}
+                height={44}
+              />
+              <YAxis
+                domain={[0, 100]}
+                tick={{ fontSize: 12, fill: "#94a3b8" }}
+                label={{ value: "Score (out of 100)", angle: -90, position: "insideLeft", offset: 14, fontSize: 12, fill: "#94a3b8" }}
+                width={56}
+              />
+              <Tooltip content={<ScoreHistoryTooltip />} />
+              <Legend
+                wrapperStyle={{ fontSize: 12, color: "#64748b", paddingTop: 8 }}
+                formatter={(value) => <span style={{ color: "#64748b", fontWeight: 500 }}>{value}</span>}
+              />
+              <ReferenceLine
+                y={75}
+                stroke="#10b981"
+                strokeDasharray="6 3"
+                strokeWidth={1.5}
+                label={{ value: "Pass threshold (75)", fill: "#10b981", fontSize: 11, position: "insideTopRight" }}
+              />
+              <Area
+                type="monotone"
+                dataKey="Total"
+                stroke="#6366f1"
+                strokeWidth={2.5}
+                fill="url(#totalGrad)"
+                dot={<ScoreDot stroke="#6366f1" />}
+                label={<ScoreLabel fill="#6366f1" />}
+                activeDot={{ r: 6, stroke: "#6366f1", strokeWidth: 2, fill: "white" }}
+              />
+              <Line
+                type="monotone"
+                dataKey="AI Score"
+                stroke="#0ea5e9"
+                strokeWidth={1.5}
+                dot={{ r: 3, fill: "#0ea5e9", stroke: "white", strokeWidth: 1.5 }}
+                strokeDasharray="4 2"
+                label={{ fontSize: 10, fill: "#0ea5e9", position: "top", formatter: (v: any) => v }}
+              />
+              <Line
+                type="monotone"
+                dataKey="Manual Score"
+                stroke="#f59e0b"
+                strokeWidth={1.5}
+                dot={{ r: 3, fill: "#f59e0b", stroke: "white", strokeWidth: 1.5 }}
+                strokeDasharray="4 2"
+                label={{ fontSize: 10, fill: "#f59e0b", position: "top", formatter: (v: any) => v }}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
-        {/* ── SECTION PERFORMANCE + RADAR ─────────── */}
+        {/* ── SECTION PERFORMANCE + SECTION COMPARISON (replaces radar) ── */}
         <div className="grid lg:grid-cols-2 gap-6">
 
           {/* Section Bar Chart */}
           <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 bg-sky-50 rounded-lg flex items-center justify-center">
                 <BarChart2 className="w-4 h-4 text-sky-600" />
               </div>
               <h2 className="font-semibold text-slate-800">Section Scores (Latest)</h2>
             </div>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={sectionBarData} layout="vertical" barSize={14}>
+            <div className="flex items-center gap-4 mb-4">
+              <p className="text-xs text-slate-400">
+                <span className="font-semibold text-slate-600">X-axis:</span> Score percentage (%)
+              </p>
+              <p className="text-xs text-slate-400">
+                <span className="font-semibold text-slate-600">Y-axis:</span> Test section
+              </p>
+            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={sectionBarData} layout="vertical" barSize={16} margin={{ top: 4, right: 48, bottom: 4, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "#94a3b8" }} />
-                <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 11, fill: "#64748b" }} />
-                <Tooltip content={<CustomTooltip />} formatter={(v: any) => [`${v}%`]} />
-                <Bar dataKey="pct" name="Score %" radius={[0, 4, 4, 0]}>
+                <XAxis
+                  type="number"
+                  domain={[0, 100]}
+                  tick={{ fontSize: 11, fill: "#94a3b8" }}
+                  tickFormatter={(v) => `${v}%`}
+                  label={{ value: "Score (%)", position: "insideBottom", offset: -2, fontSize: 11, fill: "#94a3b8" }}
+                  height={36}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  width={108}
+                  tick={{ fontSize: 11, fill: "#64748b" }}
+                />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  formatter={(v: any) => [`${v}%`, "Score"]}
+                />
+                <ReferenceLine x={75} stroke="#10b98140" strokeDasharray="4 2" />
+                <Bar dataKey="pct" name="Score %" radius={[0, 6, 6, 0]}>
                   {sectionBarData.map((entry, i) => (
-                    <rect key={i} fill={entry.color} />
+                    <Cell key={i} fill={entry.color} />
                   ))}
+                  <LabelList
+                    dataKey="pct"
+                    position="right"
+                    formatter={(v: any) => `${v}%`}
+                    style={{ fontSize: 11, fontWeight: 700, fill: "#475569" }}
+                  />
                 </Bar>
-                {sectionBarData.map((entry) => (
-                  <ReferenceLine key={entry.name} x={75} stroke="#10b98120" />
-                ))}
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          {/* Radar */}
-          {attempts.length >= 2 && (
+          {/* ── NEW: Section Comparison across last 3 attempts (replaces radar) ── */}
+          {attempts.length >= 2 ? (
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-6">
+              <div className="flex items-center gap-2 mb-2">
                 <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
                   <Target className="w-4 h-4 text-emerald-600" />
                 </div>
-                <h2 className="font-semibold text-slate-800">Skill Radar (Last 3 Attempts)</h2>
+                <h2 className="font-semibold text-slate-800">
+                  Section Comparison — Last {Math.min(3, attempts.length)} Attempts
+                </h2>
+              </div>
+              <div className="flex items-center gap-4 mb-1">
+                <p className="text-xs text-slate-400">
+                  <span className="font-semibold text-slate-600">X-axis:</span> Test section
+                </p>
+                <p className="text-xs text-slate-400">
+                  <span className="font-semibold text-slate-600">Y-axis:</span> Score percentage (%)
+                </p>
+              </div>
+              {/* Legend badge explanation */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {compareKeys.map((key, i) => (
+                  <span
+                    key={key}
+                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border"
+                    style={{ background: `${compareColors[i]}18`, color: compareColors[i], borderColor: `${compareColors[i]}40` }}
+                  >
+                    <span className="w-2 h-2 rounded-full" style={{ background: compareColors[i] }} />
+                    {key}
+                  </span>
+                ))}
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border border-emerald-200 bg-emerald-50 text-emerald-700 ml-auto">
+                  — Pass line: 75%
+                </span>
               </div>
               <ResponsiveContainer width="100%" height={280}>
-                <RadarChart data={radarData}>
-                  <PolarGrid stroke="#e2e8f0" />
-                  <PolarAngleAxis dataKey="section" tick={{ fontSize: 11, fill: "#64748b" }} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10, fill: "#94a3b8" }} />
-                  {["#6366f1", "#0ea5e9", "#10b981"].slice(0, Math.min(3, attempts.length)).map((color, i) => {
-                    const key = `Attempt ${Math.max(1, attempts.length - 2) + i}`
-                    return (
-                      <Radar key={key} name={key} dataKey={key}
-                        stroke={color} fill={color} fillOpacity={0.12} strokeWidth={2} />
-                    )
-                  })}
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                </RadarChart>
+                <BarChart
+                  data={sectionCompareData}
+                  barSize={attempts.length >= 3 ? 10 : 14}
+                  margin={{ top: 18, right: 8, bottom: 48, left: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis
+                    dataKey="section"
+                    tick={{ fontSize: 10, fill: "#64748b" }}
+                    interval={0}
+                    angle={-35}
+                    textAnchor="end"
+                    height={56}
+                    label={{ value: "Test Section", position: "insideBottom", offset: -44, fontSize: 11, fill: "#94a3b8" }}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    tick={{ fontSize: 11, fill: "#94a3b8" }}
+                    tickFormatter={(v) => `${v}%`}
+                    label={{ value: "Score (%)", angle: -90, position: "insideLeft", offset: 14, fontSize: 11, fill: "#94a3b8" }}
+                    width={52}
+                  />
+                  <Tooltip content={<SectionCompareTooltip />} />
+                  <ReferenceLine y={75} stroke="#10b981" strokeDasharray="5 3" strokeWidth={1.5} />
+                  {compareKeys.map((key, i) => (
+                    <Bar key={key} dataKey={key} fill={compareColors[i]} radius={[4, 4, 0, 0]}>
+                      <LabelList
+                        dataKey={key}
+                        position="top"
+                        formatter={(v: any) => `${v}%`}
+                        style={{ fontSize: 9, fontWeight: 700, fill: compareColors[i] }}
+                      />
+                    </Bar>
+                  ))}
+                </BarChart>
               </ResponsiveContainer>
             </div>
-          )}
-
-          {/* If only 1 attempt, show AI vs Manual */}
-          {attempts.length < 2 && (
+          ) : (
+            /* If only 1 attempt, show AI vs Manual */
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
               <div className="flex items-center gap-2 mb-6">
                 <div className="w-8 h-8 bg-violet-50 rounded-lg flex items-center justify-center">
@@ -535,17 +733,43 @@ export function AnalysisDashboard({ attempts }: { attempts: Attempt[] }) {
         {/* ── SECTION TREND (grouped bar) ──────────── */}
         {attempts.length >= 2 && (
           <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 bg-pink-50 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 text-pink-600" />
               </div>
               <h2 className="font-semibold text-slate-800">Section Progress Over Attempts (%)</h2>
             </div>
+            <div className="flex items-center gap-4 mb-4">
+              <p className="text-xs text-slate-400">
+                <span className="font-semibold text-slate-600">X-axis:</span> Test section
+              </p>
+              <p className="text-xs text-slate-400">
+                <span className="font-semibold text-slate-600">Y-axis:</span> Score percentage (%)
+              </p>
+            </div>
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={sectionTrendData} barSize={attempts.length > 4 ? 8 : 16}>
+              <BarChart
+                data={sectionTrendData}
+                barSize={attempts.length > 4 ? 8 : 16}
+                margin={{ top: 4, right: 8, bottom: 48, left: 0 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="section" tick={{ fontSize: 10, fill: "#94a3b8" }} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#94a3b8" }} />
+                <XAxis
+                  dataKey="section"
+                  tick={{ fontSize: 10, fill: "#94a3b8" }}
+                  angle={-35}
+                  textAnchor="end"
+                  height={56}
+                  interval={0}
+                  label={{ value: "Test Section", position: "insideBottom", offset: -44, fontSize: 11, fill: "#94a3b8" }}
+                />
+                <YAxis
+                  domain={[0, 100]}
+                  tick={{ fontSize: 11, fill: "#94a3b8" }}
+                  tickFormatter={(v) => `${v}%`}
+                  label={{ value: "Score (%)", angle: -90, position: "insideLeft", offset: 14, fontSize: 11, fill: "#94a3b8" }}
+                  width={52}
+                />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 {attempts.map((_, i) => (

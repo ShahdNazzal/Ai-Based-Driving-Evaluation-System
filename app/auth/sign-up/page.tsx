@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { signUp } from "@/app/auth/actions"
 import { useFormStatus } from "react-dom"
+import { useRouter } from "next/navigation"
+
+
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -22,6 +25,9 @@ function SubmitButton() {
 }
 
 function SignUpForm() {
+
+  const router = useRouter()
+
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
 
@@ -50,6 +56,24 @@ function SignUpForm() {
               {error}
             </div>
           )}
+
+
+
+
+
+<div className="absolute top-4 left-4">
+  <Button
+    type="button"
+    variant="outline"
+    className="text-sm transition-colors hover:bg-blue-600 hover:text-white hover:border-blue-600"
+    onClick={() => router.push("/")}
+  >
+    ← Back
+  </Button>
+</div>
+
+
+
           <form action={signUp} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="full_name" className="text-card-foreground">Full Name</Label>

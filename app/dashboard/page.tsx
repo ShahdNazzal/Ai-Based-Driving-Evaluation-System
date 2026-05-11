@@ -90,8 +90,8 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false })
       .limit(1),
     supabase
-      .from("final_grades")
-      .select("*")
+      .from("practical_test_grades")
+      .select("total_score")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(1),
@@ -99,7 +99,7 @@ export default async function DashboardPage() {
 
   const theoryScore   = theoryScoresRes.data?.[0]?.score ?? null
   const practicalGrade = practicalGradesRes.data?.[0] ?? null
-  const finalGrade    = finalGradesRes.data?.[0]?.final_grade ?? null
+  const finalGrade    = finalGradesRes.data?.[0]?.total_score ?? null
 
   const practicalTotal = practicalGrade?.total_score ?? null
   const aiScore        = practicalGrade?.ai_total_score ?? null

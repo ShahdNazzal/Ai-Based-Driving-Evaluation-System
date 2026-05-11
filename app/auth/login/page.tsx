@@ -3,26 +3,46 @@
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
+import { useFormStatus } from "react-dom"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
+
 import { signIn } from "@/app/auth/actions"
 import { CarFront, Loader2 } from "lucide-react"
 
-import { useFormStatus } from "react-dom"
-
 function SubmitButton() {
   const { pending } = useFormStatus()
+
   return (
-    <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={pending}>
-      {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+    <Button
+      type="submit"
+      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+      disabled={pending}
+    >
+      {pending ? (
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      ) : null}
+
       Sign In
     </Button>
   )
 }
 
+
+
+
+
 function LoginForm() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
 
@@ -38,22 +58,42 @@ function LoginForm() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
             <CarFront className="h-6 w-6 text-primary-foreground" />
           </div>
+
           <CardTitle className="text-2xl font-bold text-card-foreground">
             Welcome Back
           </CardTitle>
+
           <CardDescription>
             Sign in to your Driver Skill Assessment account
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           {error && (
             <div className="mb-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
               {error}
             </div>
           )}
+
+
+
+<div className="absolute top-4 left-4">
+  <Button
+    type="button"
+    variant="outline"
+    className="text-sm transition-colors hover:bg-blue-600 hover:text-white hover:border-blue-600"
+    onClick={() => router.push("/")}
+  >
+    ← Back
+  </Button>
+</div>
+
           <form action={signIn} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email" className="text-card-foreground">Email</Label>
+              <Label htmlFor="email" className="text-card-foreground">
+                Email
+              </Label>
+
               <Input
                 id="email"
                 name="email"
@@ -62,8 +102,12 @@ function LoginForm() {
                 required
               />
             </div>
+
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password" className="text-card-foreground">Password</Label>
+              <Label htmlFor="password" className="text-card-foreground">
+                Password
+              </Label>
+
               <Input
                 id="password"
                 name="password"
@@ -72,11 +116,26 @@ function LoginForm() {
                 required
               />
             </div>
+
+            {/* FORGOT PASSWORD */}
+            <div className="flex items-center justify-end">
+              <Link
+                href="/auth/forgot-password"
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
             <SubmitButton />
           </form>
+
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            {"Don't have an account? "}
-            <Link href="/auth/sign-up" className="font-medium text-primary hover:underline">
+            Don't have an account?{" "}
+            <Link
+              href="/auth/sign-up"
+              className="font-medium text-primary hover:underline"
+            >
               Sign Up
             </Link>
           </p>

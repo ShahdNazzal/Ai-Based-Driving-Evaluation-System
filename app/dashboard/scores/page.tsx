@@ -9,6 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { format } from "date-fns"
 
+
+import { revalidatePath } from "next/cache"
+
 // Activity sections matching the dashboard
 const ACTIVITY_SECTIONS = [
   { key: "seatbelt", label: "Seatbelt", max: 2, section: "Readiness" },
@@ -55,25 +58,22 @@ function getScoreColor(score: number, max: number): string {
 
 export default async function ScoresPage() {
   const supabase = await createClient()
+
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   if (!user) return null
 
-  const [theoryRes, practicalRes, finalRes] = await Promise.all([
+  const [theoryRes, practicalRes] = await Promise.all([
     supabase
       .from("theory_test_scores")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
+
     supabase
       .from("practical_test_grades")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("final_grades")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
@@ -81,7 +81,10 @@ export default async function ScoresPage() {
 
   const theoryScores = theoryRes.data ?? []
   const practicalGrades = practicalRes.data ?? []
-  const finalGrades = finalRes.data ?? []
+
+  // Final grades will use the same source as the dashboard:
+  // practical_test_grades.total_score
+  const finalGrades = practicalGrades
 
   return (
     <div className="animate-fade-in">
@@ -89,6 +92,7 @@ export default async function ScoresPage() {
         <h1 className="text-2xl font-bold text-foreground lg:text-3xl">
           My Scores
         </h1>
+
         <p className="mt-1 text-muted-foreground">
           View all your test results and assessment scores.
         </p>
@@ -96,17 +100,22 @@ export default async function ScoresPage() {
 
       <div className="flex flex-col gap-6">
         {/* Theory test scores */}
+
+        {/*
         <section>
           <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-foreground">
             <BookOpen className="h-5 w-5 text-primary" />
             Theory Test Scores
           </h2>
+
           {theoryScores.length === 0 ? (
             <Card className="border-border bg-card">
-              <CardContent className="flex items-center gap-3 py-8 justify-center">
+              <CardContent className="flex items-center justify-center gap-3 py-8">
                 <AlertCircle className="h-5 w-5 text-muted-foreground" />
+
                 <p className="text-muted-foreground">
-                  No theory test scores yet. Your score will appear here after the admin enters it.
+                  No theory test scores yet. Your score will appear here after
+                  the admin enters it.
                 </p>
               </CardContent>
             </Card>
@@ -116,33 +125,168 @@ export default async function ScoresPage() {
                 <Card key={s.id} className="border-border bg-card">
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>
-                        {format(new Date(s.created_at), "MMM d, yyyy")}
-                      </span>
+                      <span>{format(new Date(s.created_at), "MMM d, yyyy")}</span>
+
                       <span
                         className={`text-xs font-semibold ${
-                          s.score >= 85 ? "text-emerald-500" : "text-destructive"
+                          s.score >= 85
+                            ? "text-emerald-500"
+                            : "text-destructive"
                         }`}
                       >
                         {s.score >= 85 ? "PASSED" : "FAILED"}
                       </span>
                     </CardTitle>
                   </CardHeader>
+
                   <CardContent>
                     <div className="text-3xl font-bold text-card-foreground">
                       {s.score}/100
                     </div>
-                    <Progress
-                      value={s.score}
-                      className="mt-2 h-1.5"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">Pass threshold: 85/100</p>
+
+                    <Progress value={s.score} className="mt-2 h-1.5" />
+
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Pass threshold: 85/100
+                    </p>
                   </CardContent>
                 </Card>
               ))}
             </div>
           )}
         </section>
+*/}
+<section>
+  <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-foreground">
+    <BookOpen className="h-5 w-5 text-primary" />
+    Theory Test Scores
+  </h2>
+
+  {/* ✅ ADD SCORE FORM */}
+  <form
+    action={async (formData) => {
+      "use server"
+
+      const supabase = await createClient()
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) return
+
+      const score = Number(formData.get("score"))
+
+      if (!score || score < 0 || score > 100) return
+
+      
+      
+
+
+
+
+
+
+// جيب آخر محاولة
+const { data: lastScore } = await supabase
+  .from("theory_test_scores")
+  .select("*")
+  .eq("user_id", user.id)
+  .order("created_at", { ascending: false })
+  .limit(1)
+  .maybeSingle()
+
+// إذا كان ناجح → لا تضيف
+if (lastScore && lastScore.score >= 85) {
+  return
+}
+
+// إذا راسب أو ما عنده نتيجة → أضف
+await supabase.from("theory_test_scores").insert([
+  {
+    user_id: user.id,
+    score: score,
+  },
+])
+
+revalidatePath("/dashboard")
+
+
+
+
+
+
+    }}
+    className="mb-4 flex gap-2"
+  >
+    <input
+      type="number"
+      name="score"
+      placeholder="Enter score"
+      min={0}
+      max={100}
+      className="w-32 rounded-md border px-3 py-2 text-sm"
+    />
+
+    <button
+      type="submit"
+      className="rounded-md bg-primary px-4 py-2 text-sm text-white"
+    >
+      Add
+    </button>
+  </form>
+
+  {theoryScores.length === 0 ? (
+    <Card className="border-border bg-card">
+      <CardContent className="flex items-center justify-center gap-3 py-8">
+        <AlertCircle className="h-5 w-5 text-muted-foreground" />
+
+        <p className="text-muted-foreground">
+          No theory test scores yet. Add your score above.
+        </p>
+      </CardContent>
+    </Card>
+  ) : (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {theoryScores.map((s) => (
+        <Card key={s.id} className="border-border bg-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>{format(new Date(s.created_at), "MMM d, yyyy")}</span>
+
+              <span
+                className={`text-xs font-semibold ${
+                  s.score >= 85
+                    ? "text-emerald-500"
+                    : "text-destructive"
+                }`}
+              >
+                {s.score >= 85 ? "PASSED" : "FAILED"}
+              </span>
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            <div className="text-3xl font-bold text-card-foreground">
+              {s.score}/100
+            </div>
+
+            <Progress value={s.score} className="mt-2 h-1.5" />
+
+            <p className="mt-1 text-xs text-muted-foreground">
+              Pass threshold: 85/100
+            </p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  )}
+</section>
+
+
+
+
+
 
         {/* Practical test grades */}
         <section>
@@ -150,12 +294,15 @@ export default async function ScoresPage() {
             <Camera className="h-5 w-5 text-accent" />
             DL Practical Test Grades
           </h2>
+
           {practicalGrades.length === 0 ? (
             <Card className="border-border bg-card">
-              <CardContent className="flex items-center gap-3 py-8 justify-center">
+              <CardContent className="flex items-center justify-center gap-3 py-8">
                 <AlertCircle className="h-5 w-5 text-muted-foreground" />
+
                 <p className="text-muted-foreground">
-                  No practical test grades yet. Complete the practical test to see your AI-assessed results.
+                  No practical test grades yet. Complete the practical test to
+                  see your AI-assessed results.
                 </p>
               </CardContent>
             </Card>
@@ -166,44 +313,82 @@ export default async function ScoresPage() {
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center justify-between text-sm text-muted-foreground">
                       <span>{format(new Date(g.created_at), "MMM d, yyyy")}</span>
-                      <span className={`text-xs font-semibold ${g.total_score >= 75 ? "text-emerald-500" : "text-destructive"}`}>
+
+                      <span
+                        className={`text-xs font-semibold ${
+                          g.total_score >= 75
+                            ? "text-emerald-500"
+                            : "text-destructive"
+                        }`}
+                      >
                         {g.total_score >= 75 ? "PASSED" : "FAILED"}
                       </span>
                     </CardTitle>
                   </CardHeader>
+
                   <CardContent className="flex flex-col gap-4">
                     {/* Total Score */}
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-semibold text-foreground">Total Score</span>
-                      <span className="text-2xl font-bold text-foreground">{g.total_score}/100</span>
+                      <span className="text-lg font-semibold text-foreground">
+                        Total Score
+                      </span>
+
+                      <span className="text-2xl font-bold text-foreground">
+                        {g.total_score}/100
+                      </span>
                     </div>
+
                     <Progress value={g.total_score} className="h-2" />
-                    
+
                     {/* AI vs Manual breakdown */}
-                    <div className="grid grid-cols-2 gap-3 mt-2">
-                      <div className="bg-violet-500/10 rounded-lg p-3">
-                        <p className="text-xs text-muted-foreground">AI Assessment</p>
-                        <p className="text-lg font-bold text-violet-500">{g.ai_total_score}/65</p>
+                    <div className="mt-2 grid grid-cols-2 gap-3">
+                      <div className="rounded-lg bg-violet-500/10 p-3">
+                        <p className="text-xs text-muted-foreground">
+                          AI Assessment
+                        </p>
+
+                        <p className="text-lg font-bold text-violet-500">
+                          {g.ai_total_score}/65
+                        </p>
                       </div>
-                      <div className="bg-orange-500/10 rounded-lg p-3">
-                        <p className="text-xs text-muted-foreground">Manual Assessment</p>
-                        <p className="text-lg font-bold text-orange-500">{g.manual_total_score}/35</p>
+
+                      <div className="rounded-lg bg-orange-500/10 p-3">
+                        <p className="text-xs text-muted-foreground">
+                          Manual Assessment
+                        </p>
+
+                        <p className="text-lg font-bold text-orange-500">
+                          {g.manual_total_score}/35
+                        </p>
                       </div>
                     </div>
 
                     {/* Detailed Breakdown */}
                     <div className="mt-2">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Detailed Breakdown
                       </p>
-                      <div className="max-h-64 overflow-y-auto space-y-1">
+
+                      <div className="max-h-64 space-y-1 overflow-y-auto">
                         {ACTIVITY_SECTIONS.map((section) => {
                           const scoreKey = `${section.key}_score` as keyof typeof g
                           const score = (g as any)[scoreKey] ?? 0
+
                           return (
-                            <div key={section.key} className="flex items-center justify-between text-xs py-1 border-b border-border/50 last:border-0">
-                              <span className="text-muted-foreground">{section.label}</span>
-                              <span className={`font-medium ${getScoreColor(score, section.max)}`}>
+                            <div
+                              key={section.key}
+                              className="flex items-center justify-between border-b border-border/50 py-1 text-xs last:border-0"
+                            >
+                              <span className="text-muted-foreground">
+                                {section.label}
+                              </span>
+
+                              <span
+                                className={`font-medium ${getScoreColor(
+                                  score,
+                                  section.max
+                                )}`}
+                              >
                                 {score}/{section.max}
                               </span>
                             </div>
@@ -224,12 +409,15 @@ export default async function ScoresPage() {
             <Trophy className="h-5 w-5 text-chart-3" />
             Final Grades
           </h2>
+
           {finalGrades.length === 0 ? (
             <Card className="border-border bg-card">
-              <CardContent className="flex items-center gap-3 py-8 justify-center">
+              <CardContent className="flex items-center justify-center gap-3 py-8">
                 <AlertCircle className="h-5 w-5 text-muted-foreground" />
+
                 <p className="text-muted-foreground">
-                  No final grade assigned yet. This will be entered by the admin.
+                  No final grade available yet. Complete the practical test to
+                  see your final grade.
                 </p>
               </CardContent>
             </Card>
@@ -238,24 +426,31 @@ export default async function ScoresPage() {
               {finalGrades.map((f) => (
                 <Card key={f.id} className="border-border bg-card">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-muted-foreground">
-                      {format(new Date(f.created_at), "MMM d, yyyy")}
+                    <CardTitle className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>{format(new Date(f.created_at), "MMM d, yyyy")}</span>
+
+                      <span
+                        className={`text-xs font-semibold ${
+                          f.total_score >= 75
+                            ? "text-emerald-500"
+                            : "text-destructive"
+                        }`}
+                      >
+                        {f.total_score >= 75 ? "PASSED" : "FAILED"}
+                      </span>
                     </CardTitle>
                   </CardHeader>
+
                   <CardContent>
                     <div className="text-3xl font-bold text-card-foreground">
-                      {f.final_grade}/100
+                      {f.total_score}/100
                     </div>
-                    {f.notes && (
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {f.notes}
-                      </p>
-                    )}
-                    <Progress
-                      value={f.final_grade}
-                      className="mt-2 h-1.5"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">Pass threshold: 75/100</p>
+
+                    <Progress value={f.total_score} className="mt-2 h-1.5" />
+
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Pass threshold: 75/100
+                    </p>
                   </CardContent>
                 </Card>
               ))}

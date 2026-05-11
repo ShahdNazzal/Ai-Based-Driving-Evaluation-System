@@ -76,14 +76,3 @@ export default async function PracticalTestPage() {
     />
   )
 }
-
-
-
-
-
-
-
-
-
-
-

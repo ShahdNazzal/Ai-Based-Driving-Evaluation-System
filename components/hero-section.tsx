@@ -766,7 +766,7 @@ export function HeroSection() {
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
           <div className="mx-auto max-w-7xl px-6 py-5 lg:px-16 flex flex-col sm:flex-row items-center justify-between gap-3">
             <span className="mono" style={{ fontSize: 11, color: "var(--tx-muted)" }}>
-              © 2026 ROXA · Jordan University of Science and Technology
+              © 2026 ROXA · Yarmouk University
             </span>
             <div className="flex items-center gap-2">
               <div className="status-dot rounded-full" style={{ width: 7, height: 7, background: "#4ade80" }} />
