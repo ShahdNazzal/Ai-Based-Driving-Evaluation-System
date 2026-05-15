@@ -260,6 +260,30 @@ function ScoreLabel(props: any) {
 export function AnalysisDashboard({ attempts }: { attempts: Attempt[] }) {
   const [activeSection, setActiveSection] = useState("all")
 
+
+
+
+
+ // ─── Guard: no attempts yet — MUST be before any attempt-dependent code ───
+  if (!attempts || attempts.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-gray-50 rounded-xl border border-yellow-200">
+        <svg className="w-16 h-16 text-yellow-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M12 3a9 9 0 100 18A9 9 0 0012 3z" />
+        </svg>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">No Test Data Yet</h2>
+        <p className="text-gray-600 max-w-md">
+          You haven't completed a practical test yet. Go take the practical exam first, then come back here and you'll find this page ready for you.
+        </p>
+      </div>
+    )
+  }
+
+
+
+
+
+
   const latest = attempts[attempts.length - 1]
   const first  = attempts[0]
 
