@@ -21,7 +21,7 @@ const instructors = [
     name: "عدنان رمضان",
     phone: "962788443081",
     displayPhone: "+962 788443081",
-    image: "/المدرب_عدنان.jpeg",
+    image: "/المدرب_عدنان.jpg",
   },
   {
     name: "رعد عواد",
@@ -125,19 +125,19 @@ export default function InstructorsPage() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-200 bg-white/80 backdrop-blur-sm mb-8">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-medium text-gray-500 tracking-wide">
-                متاح الآن
+                all instructors are verified and certified by the Driver Skill Assessment platform
               </span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.1] mb-6 text-gray-900">
-              اختر{" "}
+              choose{" "}
               <span className="bg-gradient-to-r from-blue-600 via-violet-600 to-purple-600 bg-clip-text text-transparent">
-                مدربك
+                your instructor
               </span>
             </h1>
 
             <p className="text-gray-500 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-              مدربون محترفون معتمدون · خبرة عملية واسعة · ابدأ رحلتك الآن
+              You can contact the instructors directly via phone or WhatsApp.
             </p>
           </div>
         </header>
@@ -184,7 +184,7 @@ export default function InstructorsPage() {
                     className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-gray-300 transition-all duration-300"
                   >
                     <PhoneIcon className="w-4 h-4" />
-                    <span>اتصال</span>
+                    <span>Call</span>
                   </a>
 
                   <a
@@ -194,13 +194,13 @@ export default function InstructorsPage() {
                     className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition-all duration-300"
                   >
                     <WhatsAppIcon className="w-4 h-4" />
-                    <span>واتساب</span>
+                    <span>WhatsApp</span>
                   </a>
 
                   <button
                     onClick={() => handleCopy(inst.displayPhone)}
                     className="flex items-center justify-center w-11 rounded-xl bg-gray-50 border border-gray-200 text-gray-400 hover:text-gray-700 hover:bg-gray-100 hover:border-gray-300 transition-all duration-300 shrink-0"
-                    title="نسخ الرقم"
+                    title="Copy Number"
                   >
                     <CopyIcon className="w-4 h-4" />
                   </button>
@@ -215,7 +215,7 @@ export default function InstructorsPage() {
           <div className="max-w-6xl mx-auto">
             <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
             <p className="text-center text-gray-400 text-xs mt-6 font-mono">
-              © {new Date().getFullYear()} · جميع الحقوق محفوظة
+              © {new Date().getFullYear()} · All rights reserved
             </p>
           </div>
         </div>

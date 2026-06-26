@@ -34,8 +34,8 @@ function SignUpForm() {
 
       <Card className="relative z-10 w-full max-w-md border-background/10 bg-background shadow-2xl">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <CarFront className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary shadow-[0_0_15px_3px_rgba(var(--primary-rgb,59,130,246),0.6)] ">
+            <CarFront className="h-6 w-6 text-primary-foreground drop-shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
           </div>
           <CardTitle className="text-2xl font-bold text-card-foreground">
             Create Your Account

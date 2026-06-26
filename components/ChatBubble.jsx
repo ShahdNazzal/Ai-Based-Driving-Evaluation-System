@@ -6,7 +6,8 @@ export default function ChatBubble() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState([
-    { role: "assistant", content: "مرحباً! أنا مساعدك في تقييم مهارات القيادة. كيف يمكنني مساعدتك؟ 👋" }
+    { role: "assistant", content: "  مرحباً 👋 انا مدربتك الذكية  🤖 كيف يمكنني خدمتك؟ "  },
+
   ]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
@@ -42,32 +43,39 @@ export default function ChatBubble() {
     <>
       <style>{`
         .chat-bubble-btn {
-          position: fixed;
-          bottom: 24px;
-          right: 24px;
           width: 60px;
           height: 60px;
           border-radius: 50%;
-          background: #0f2d6e;
+          background: linear-gradient(135deg, #0f2d6e, #0a1a40);
           border: 2px solid #00c8ff;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          z-index: 1000;
           transition: transform 0.2s;
           box-shadow: 0 4px 16px rgba(0,200,255,0.25);
+          flex-shrink: 0;
         }
         .chat-bubble-btn:hover { transform: scale(1.08); }
 
+        .bubble-wrapper {
+          position: fixed;
+          bottom: 24px;
+          right: 24px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          z-index: 1000;
+        }
+
         .chat-window {
           position: fixed;
-          bottom: 96px;
-          right: 24px;
-          width: 320px;
-          height: 440px;
+          bottom: 90px;
+          right: 15px;
+          width: 240px;
+          height: 350px;
           background: #1a2a4a;
-          border-radius: 20px;
+          border-radius: 18px;
           border: 1px solid #1e3a6e;
           display: flex;
           flex-direction: column;
@@ -77,33 +85,41 @@ export default function ChatBubble() {
         }
 
         .chat-header {
-          background: #0f2050;
-          padding: 12px 16px;
+          background: linear-gradient(135deg, #0f2050, #0a1840);
+          padding: 10px 14px;
           display: flex;
           align-items: center;
           justify-content: space-between;
           border-bottom: 1px solid #1e3a6e;
         }
 
-        .header-left { display: flex; align-items: center; gap: 10px; }
+        .header-left { display: flex; align-items: center; gap: 8px; }
 
         .bot-avatar {
-          width: 36px;
-          height: 36px;
+          width: 32px;
+          height: 32px;
           border-radius: 50%;
-          background: #0f2d6e;
+          background: linear-gradient(135deg, #0f2d6e, #0a1a40);
           border: 2px solid #00c8ff;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
-        .header-title { color: #ffffff; font-size: 14px; font-weight: 500; margin: 0; }
-        .header-sub { color: #00c8ff; font-size: 11px; margin: 0; display: flex; align-items: center; gap: 4px; }
+        .header-title {
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 700;
+          margin: 0;
+          letter-spacing: 0.5px;
+        }
+        .header-title .accent { color: #00c8ff; }
+
+        .header-sub { color: #00c8ff; font-size: 10px; margin: 0; display: flex; align-items: center; gap: 4px; }
 
         .online-dot {
-          width: 7px;
-          height: 7px;
+          width: 6px;
+          height: 6px;
           border-radius: 50%;
           background: #00ff88;
           display: inline-block;
@@ -111,7 +127,7 @@ export default function ChatBubble() {
 
         .close-btn {
           color: #8aa0c0;
-          font-size: 18px;
+          font-size: 16px;
           cursor: pointer;
           background: none;
           border: none;
@@ -122,10 +138,10 @@ export default function ChatBubble() {
         .chat-messages {
           flex: 1;
           overflow-y: auto;
-          padding: 12px;
+          padding: 10px;
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 7px;
           background: #162040;
         }
 
@@ -135,10 +151,10 @@ export default function ChatBubble() {
 
         .msg {
           max-width: 82%;
-          padding: 8px 12px;
-          border-radius: 14px;
-          font-size: 13px;
-          line-height: 1.5;
+          padding: 7px 11px;
+          border-radius: 13px;
+          font-size: 12px;
+          line-height: 1.45;
         }
 
         .msg.bot {
@@ -165,10 +181,10 @@ export default function ChatBubble() {
         }
 
         .chat-input-row {
-          padding: 10px 12px;
+          padding: 8px 10px;
           background: #0f2050;
           display: flex;
-          gap: 8px;
+          gap: 7px;
           border-top: 1px solid #1e3a6e;
         }
 
@@ -176,10 +192,10 @@ export default function ChatBubble() {
           flex: 1;
           background: #162040;
           border: 1px solid #1e3a6e;
-          border-radius: 12px;
-          padding: 8px 12px;
+          border-radius: 11px;
+          padding: 7px 11px;
           color: #c8deff;
-          font-size: 13px;
+          font-size: 12px;
           outline: none;
         }
 
@@ -188,15 +204,15 @@ export default function ChatBubble() {
         .send-btn {
           background: #00c8ff;
           border: none;
-          border-radius: 10px;
-          width: 36px;
-          height: 36px;
+          border-radius: 9px;
+          width: 32px;
+          height: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
           color: #0a1628;
-          font-size: 18px;
+          font-size: 16px;
           flex-shrink: 0;
         }
 
@@ -204,16 +220,18 @@ export default function ChatBubble() {
       `}</style>
 
       {/* زر الفقاعة */}
-      <button className="chat-bubble-btn" onClick={() => setOpen(!open)}>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="10" r="6" stroke="#00c8ff" strokeWidth="1.5"/>
-          <circle cx="9.5" cy="9.5" r="1.5" fill="#00c8ff"/>
-          <circle cx="14.5" cy="9.5" r="1.5" fill="#00c8ff"/>
-          <path d="M12 4V2" stroke="#00c8ff" strokeWidth="1.5" strokeLinecap="round"/>
-          <circle cx="12" cy="1.5" r="1" fill="#00c8ff"/>
-          <path d="M8 16l-3 4h14l-3-4" stroke="#00c8ff" strokeWidth="1.5" strokeLinejoin="round"/>
-        </svg>
-      </button>
+      <div className="bubble-wrapper">
+        <button className="chat-bubble-btn" onClick={() => setOpen(!open)}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="10" r="6" stroke="#00c8ff" strokeWidth="1.5"/>
+            <circle cx="9.5" cy="9.5" r="1.5" fill="#00c8ff"/>
+            <circle cx="14.5" cy="9.5" r="1.5" fill="#00c8ff"/>
+            <path d="M12 4V2" stroke="#00c8ff" strokeWidth="1.5" strokeLinecap="round"/>
+            <circle cx="12" cy="1.5" r="1" fill="#00c8ff"/>
+            <path d="M8 16l-3 4h14l-3-4" stroke="#00c8ff" strokeWidth="1.5" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
 
       {/* نافذة الشات */}
       {open && (
@@ -221,7 +239,7 @@ export default function ChatBubble() {
           <div className="chat-header">
             <div className="header-left">
               <div className="bot-avatar">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="10" r="6" stroke="#00c8ff" strokeWidth="1.5"/>
                   <circle cx="9.5" cy="9.5" r="1.5" fill="#00c8ff"/>
                   <circle cx="14.5" cy="9.5" r="1.5" fill="#00c8ff"/>
@@ -231,8 +249,8 @@ export default function ChatBubble() {
                 </svg>
               </div>
               <div>
-                <p className="header-title">Driving AI</p>
-                <p className="header-sub"><span className="online-dot"></span>Online</p>
+                <p className="header-title">ROXA <span className="accent">AI</span></p>
+                <p className="header-sub"><span className="online-dot"></span>online now</p>
               </div>
             </div>
             <button className="close-btn" onClick={() => setOpen(false)}>✕</button>
@@ -244,7 +262,13 @@ export default function ChatBubble() {
                 {m.content}
               </div>
             ))}
-            {loading && <div className="msg typing">يكتب...</div>}
+            {loading && (
+  <div className="msg typing">
+    {/[\u0600-\u06FF]/.test([...chat].reverse().find(m => m.role === "user")?.content || "")
+      ? "ROXA يكتب..."
+      : "ROXA is typing..."}
+  </div>
+)}
             <div ref={messagesEndRef} />
           </div>
 
@@ -254,7 +278,7 @@ export default function ChatBubble() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="اكتب سؤالك هنا..."
+              placeholder="ask ROXA anything..."
             />
             <button className="send-btn" onClick={sendMessage}>➤</button>
           </div>

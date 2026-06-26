@@ -48,15 +48,7 @@ function fmt(s: number) {
   return m > 0 ? `${m}m ${sec}s` : `${sec}s`
 }
 
-// ─── Estimate labels per step ─────────────────────────────────────────────────
-const ESTIMATES: Record<string, string> = {
-  face: "~30 – 60 seconds",
-  parking: "~45 – 90 seconds",
-  road: "~60 – 120 seconds",
-}
-
 // ─── Map Arabic category names → English display labels ──────────────────────
-// Keys match what the road model returns in cat.name (Arabic)
 const ROAD_CATEGORY_LABELS: Record<string, string> = {
   "الظروف المحيطة":          "Surroundings",
   "التموضع":                  "Positioning",
@@ -76,7 +68,6 @@ const ROAD_CATEGORY_LABELS: Record<string, string> = {
   "التعامل مع العوائق":       "Obstacles",
 }
 
-// Map Arabic name → internal key (must match EXAM_CRITERIA keys in app.py)
 const ROAD_NAME_TO_KEY: Record<string, string> = {
   "الظروف المحيطة":          "surroundings",
   "التموضع":                  "positioning",
@@ -96,23 +87,75 @@ const ROAD_NAME_TO_KEY: Record<string, string> = {
   "التعامل مع العوائق":       "obstacles",
 }
 
-// ─── Small sub-components ─────────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function StepIndicator({ currentStep }: { currentStep: number }) {
+  const steps = [
+    { num: 1, label: "Face & Seatbelt" },
+    { num: 2, label: "Parking" },
+    { num: 3, label: "Road Drive" },
+    { num: 4, label: "Review" },
+  ]
+  return (
+    <div className="flex items-center justify-between w-full">
+      {steps.map((s, i) => (
+        <div key={s.num} className="flex items-center flex-1">
+          <div className="flex flex-col items-center gap-1">
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                currentStep > s.num
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-200"
+                  : currentStep === s.num
+                  ? "bg-blue-600 text-white ring-4 ring-blue-100 shadow-md shadow-blue-200"
+                  : "bg-gray-100 text-gray-400 border border-gray-200"
+              }`}
+            >
+              {currentStep > s.num ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                s.num
+              )}
+            </div>
+            <span
+              className={`text-xs font-medium hidden sm:block whitespace-nowrap ${
+                currentStep >= s.num ? "text-blue-600" : "text-gray-400"
+              }`}
+            >
+              {s.label}
+            </span>
+          </div>
+          {i < steps.length - 1 && (
+            <div
+              className={`flex-1 h-0.5 mx-2 transition-all duration-500 ${
+                currentStep > s.num ? "bg-blue-500" : "bg-gray-200"
+              }`}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function ProgressBar({ elapsed, estimateSec }: { elapsed: number; estimateSec: number }) {
   const pct = Math.min(100, Math.round((elapsed / estimateSec) * 100))
   return (
-    <div className="w-full">
-      <div className="flex justify-between text-xs text-gray-500 mb-1">
-        <span>Elapsed: {fmt(elapsed)}</span>
-        <span>Est. ~{fmt(estimateSec)}</span>
+    <div className="w-full space-y-2">
+      <div className="flex justify-between text-xs font-medium">
+        <span className="text-blue-600">Elapsed: {fmt(elapsed)}</span>
+        <span className="text-gray-400">Est. ~{fmt(estimateSec)}</span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2.5">
+      <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
         <div
-          className="bg-blue-500 h-2.5 rounded-full transition-all duration-1000"
+          className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-1000 ease-out"
           style={{ width: `${pct}%` }}
         />
       </div>
       {elapsed > estimateSec && (
-        <p className="text-xs text-amber-600 mt-1 animate-pulse">
+        <p className="text-xs text-amber-600 flex items-center gap-1">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
           Taking longer than usual — the space may be waking up…
         </p>
       )}
@@ -121,11 +164,22 @@ function ProgressBar({ elapsed, estimateSec }: { elapsed: number; estimateSec: n
 }
 
 function VideoPreview({ file, label }: { file: File | null; label: string }) {
-  const url = file ? URL.createObjectURL(file) : null
+  const [url, setUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (file) {
+      const objectUrl = URL.createObjectURL(file)
+      setUrl(objectUrl)
+      return () => URL.revokeObjectURL(objectUrl)
+    } else {
+      setUrl(null)
+    }
+  }, [file])
+
   if (!url) return null
   return (
-    <div className="mt-3 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-      <p className="text-xs text-gray-500 px-3 py-1 bg-gray-50 border-b">{label}</p>
+    <div className="mt-3 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+      <p className="text-xs text-gray-500 px-3 py-2 bg-gray-50 border-b font-medium">{label}</p>
       <video src={url} controls className="w-full max-h-56 object-contain bg-black" />
     </div>
   )
@@ -134,9 +188,9 @@ function VideoPreview({ file, label }: { file: File | null; label: string }) {
 function ResultVideo({ url, label }: { url: string | null; label: string }) {
   if (!url) return null
   return (
-    <div className="mt-3 rounded-lg overflow-hidden border border-blue-200 shadow-sm">
-      <p className="text-xs text-blue-600 px-3 py-1 bg-blue-50 border-b font-semibold">
-        🎬 {label}
+    <div className="mt-3 rounded-xl overflow-hidden border border-blue-200 shadow-sm">
+      <p className="text-xs text-blue-600 px-3 py-2 bg-blue-50 border-b font-semibold flex items-center gap-1.5">
+        <span>🎬</span> {label}
       </p>
       <video src={url} controls autoPlay muted className="w-full max-h-64 object-contain bg-black" />
     </div>
@@ -156,25 +210,37 @@ function VideoUploader({
 }) {
   return (
     <div>
-      <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 border-gray-300 transition-colors">
-        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-          <svg
-            className="w-10 h-10 mb-3 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-            />
-          </svg>
-          <p className="mb-1 text-sm text-gray-500">
-            <span className="font-semibold">Click to upload</span>
-          </p>
-          <p className="text-xs text-gray-400">Short video (&lt; 15 s) for faster results</p>
+      <label
+        className={`flex flex-col items-center justify-center w-full h-44 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200 ${
+          file
+            ? "border-blue-400 bg-blue-50 hover:bg-blue-50"
+            : "border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400"
+        }`}
+      >
+        <div className="flex flex-col items-center justify-center gap-3 p-4 text-center">
+          {file ? (
+            <>
+              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <p className="text-sm text-blue-600 font-semibold">✅ {file.name}</p>
+              <p className="text-xs text-blue-400">Click to replace</p>
+            </>
+          ) : (
+            <>
+              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 font-semibold">{label}</p>
+                <p className="text-xs text-gray-400 mt-0.5">Short video (&lt; 15 s) for faster results</p>
+              </div>
+            </>
+          )}
         </div>
         <input
           type="file"
@@ -183,17 +249,180 @@ function VideoUploader({
           capture={captureType as any}
           onChange={(e) => e.target.files?.[0] && onChange(e.target.files[0])}
         />
-        {file && (
-          <span className="mt-1 text-sm text-green-600 font-medium pb-2">✅ {file.name}</span>
-        )}
-        {!file && (
-          <span className="mt-1 text-sm text-blue-600 font-medium pb-2">{label}</span>
-        )}
       </label>
       <VideoPreview file={file} label="Uploaded video preview" />
     </div>
   )
 }
+
+function ScoreBadge({ score, max, label }: { score: number | string; max: number; label: string }) {
+  return (
+    <div className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-white border border-gray-100">
+      <span className="text-sm text-gray-600">{label}</span>
+      <span className="text-sm font-bold text-gray-800">
+        {score}<span className="text-gray-400 font-normal">/{max}</span>
+      </span>
+    </div>
+  )
+}
+
+function SectionDone({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-2">
+      <div className="flex items-center gap-2 mb-1">
+        <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <span className="text-sm font-semibold text-green-700">Completed</span>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+// ─── Video Section Component (Cloudinary iframe) ─────────────────────────────
+
+
+function VideoSection() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div
+      style={{
+        marginTop: "0px",
+        padding: "30px 40px 80px 40px",
+        background: "#0b1b3a",
+        borderRadius: "30px",
+        color: "white",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "40px",
+          flexWrap: "wrap",
+        }}
+      >
+        {/* TEXT SIDE */}
+        <div style={{ flex: "1", minWidth: "280px" }}>
+          <h2 style={{ fontSize: "40px", marginBottom: "20px" }}>
+            How Video Analysis Works
+          </h2>
+
+          <p
+            style={{
+              fontSize: "18px",
+              color: "#cbd5f5",
+              marginBottom: "25px",
+            }}
+          >
+            The system analyzes video in real time using artificial intelligence,
+            detecting objects and showing results instantly.
+          </p>
+
+          <button
+            onClick={() => setOpen(true)}
+            style={{
+              padding: "12px 22px",
+              borderRadius: "999px",
+              background: "linear-gradient(135deg, #3b82f6, #6366f1)",
+              color: "white",
+              border: "none",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            AI Powered Analysis
+          </button>
+        </div>
+
+        {/* VIDEO PREVIEW */}
+        <div
+          style={{
+            flex: "1",
+            minWidth: "300px",
+            position: "relative",
+            aspectRatio: "16 / 9",
+            borderRadius: "25px",
+            overflow: "hidden",
+            boxShadow: "0 40px 120px rgba(0,0,0,0.5)",
+          }}
+        >
+          <iframe
+            src="https://player.cloudinary.com/embed/?cloud_name=dmx6r8aop&public_id=tmpy7h2nows_1_lcgkiq"
+            width="100%"
+            height="100%"
+            allow="autoplay; fullscreen; encrypted-media"
+            allowFullScreen
+            style={{ border: "none", position: "absolute", top: 0, left: 0 }}
+            title="Video Analysis Demo"
+          />
+        </div>
+      </div>
+
+      {/* FULLSCREEN MODAL */}
+      {open && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.85)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              width: "90%",
+              height: "80%",
+              position: "relative",
+              borderRadius: "20px",
+              overflow: "hidden",
+              background: "#000",
+            }}
+          >
+            <button
+              onClick={() => setOpen(false)}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                zIndex: 10,
+                padding: "8px 12px",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              ✕
+            </button>
+
+            <iframe
+              src="https://player.cloudinary.com/embed/?cloud_name=dmx6r8aop&public_id=tmpy7h2nows_1_lcgkiq"
+              width="100%"
+              height="100%"
+              allow="autoplay; fullscreen; encrypted-media"
+              allowFullScreen
+              style={{ border: "none" }}
+              title="Video Fullscreen"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default VideoSection;
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function PracticalTestView({
@@ -226,7 +455,6 @@ export function PracticalTestView({
 
   const ESTIMATE_SECS: Record<string, number> = { face: 45, parking: 60, road: 90 }
 
-  // Manual scores matching database columns
   const [manualScores, setManualScores] = useState({
     seat_adjust: 0,
     mirror_adjust: 0,
@@ -252,21 +480,16 @@ export function PracticalTestView({
     return null
   }
 
-  // ── FIXED: Parse parking score from "2/3" string format ─────────────────
   function parseParkingScore(value: string | number | undefined): number {
     if (value === undefined || value === null) return 0
     if (typeof value === "number") return value
-    // Handle "2/3" format
     if (typeof value === "string" && value.includes("/")) {
       return parseFloat(value.split("/")[0]) || 0
     }
     return parseFloat(String(value)) || 0
   }
 
-  // ── FIXED: getRoadScore reads from roadResult.categories (no road_evaluation wrapper) ──
   const getRoadScore = (key: string): number => {
-    // roadResult is returned directly from process_video, shape:
-    // { achieved_marks, total_marks, percentage, categories: [{name (Arabic), score, max}], ... }
     const categories = roadResult?.categories
     if (!categories) return 0
     const found = categories.find((c: any) => {
@@ -276,68 +499,58 @@ export function PracticalTestView({
     return found ? parseInt(found.score) || 0 : 0
   }
 
-  // ── Analyze handlers ──────────────────────────────────────────────────────
   const handleAnalyze = async (type: "face" | "parking" | "road") => {
-    setIsAnalyzing(true)
-    setAnalyzingType(type)
-    setAnalysisError("")
+  setIsAnalyzing(true)
+  setAnalyzingType(type)
+  setAnalysisError("")
 
-    try {
-      if (type === "face" && faceVideo) {
-        const client = await connectWithWakeup("taimaa47/behavior-seatbelt")
-        const result = await client.predict("/predict_combined_video", {
-          video_file: faceVideo,
-        })
-        const data: any = result.data
-        const scores = Array.isArray(data) ? data[0] : data
-        setFaceResult(scores)
-        if (Array.isArray(data) && data[1]) setFaceOutputVideoUrl(extractVideoUrl(data[1]))
-        setStep(2)
-      } else if (type === "parking" && parkingVideo) {
-        const client = await connectWithWakeup("shahednazzal/parking")
-        const result = await client.predict("/analyze_video", {
-          video_input: parkingVideo,
-        })
-        const data: any = result.data
-        // parking model returns [out_path, report] — report is data[1], video is data[0]
-        const scores = Array.isArray(data) ? data[1] : data
-        setParkingResult(scores)
-        if (Array.isArray(data) && data[0]) setParkingOutputVideoUrl(extractVideoUrl(data[0]))
-        setStep(3)
-      } else if (type === "road" && roadVideo) {
-        const client = await connectWithWakeup("shahednazzal/road_model")
-        const result = await client.predict("/process_video", {
-          video_path: roadVideo,
-        })
-        const data: any = result.data
-        // road model returns [out_path, result_dict]
-        const scores = Array.isArray(data) ? data[1] : data
-        setRoadResult(scores)
-        if (Array.isArray(data) && data[0]) setRoadOutputVideoUrl(extractVideoUrl(data[0]))
-        setStep(4)
-      }
-    } catch (error: any) {
-      setAnalysisError(error.message || "Failed to connect to AI model. Please try again.")
-    } finally {
-      setIsAnalyzing(false)
-      setAnalyzingType(null)
+  try {
+    const formData = new FormData()
+
+    if (type === "face" && faceVideo) {
+      formData.append("video", faceVideo)
+      const res = await fetch("/api/analyze/face", { method: "POST", body: formData })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.error)
+      setFaceResult(Array.isArray(json.data) ? json.data[0] : json.data)
+      if (Array.isArray(json.data) && json.data[1]) setFaceOutputVideoUrl(extractVideoUrl(json.data[1]))
+      setStep(2)
+
+    } else if (type === "parking" && parkingVideo) {
+      formData.append("video", parkingVideo)
+      const res = await fetch("/api/analyze/parking", { method: "POST", body: formData })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.error)
+      setParkingResult(Array.isArray(json.data) ? json.data[1] : json.data)
+      if (Array.isArray(json.data) && json.data[0]) setParkingOutputVideoUrl(extractVideoUrl(json.data[0]))
+      setStep(3)
+
+    } else if (type === "road" && roadVideo) {
+      formData.append("video", roadVideo)
+      const res = await fetch("/api/analyze/road", { method: "POST", body: formData })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.error)
+      setRoadResult(Array.isArray(json.data) ? json.data[1] : json.data)
+      if (Array.isArray(json.data) && json.data[0]) setRoadOutputVideoUrl(extractVideoUrl(json.data[0]))
+      setStep(4)
     }
-  }
 
-  // ── Submit final test ────────────────────────────────────────────────────────
+  } catch (error: any) {
+    setAnalysisError(error.message || "Failed to analyze. Please try again.")
+  } finally {
+    setIsAnalyzing(false)
+    setAnalyzingType(null)
+  }
+}
+
   const submitFinalTest = async () => {
     setIsAnalyzing(true)
 
     try {
-      // AI Scores from Face/Behavior Model (4 marks total)
       const aiBehavior = faceResult?.behavior_score?.score_out_of_2 || 0
       const aiSeatbelt = faceResult?.seatbelt_score?.score_out_of_2 || 0
-
-      // AI Scores from Parking Model (5 marks total) — FIXED: parse "2/3" strings
       const aiParkingAlignment = parseParkingScore(parkingResult?.alignment)
       const aiParkingStability = parseParkingScore(parkingResult?.stability)
-
-      // AI Scores from Road Model (56 marks total)
       const aiSurroundings    = getRoadScore("surroundings")
       const aiPositioning     = getRoadScore("positioning")
       const aiLaneKeeping     = getRoadScore("lane_keeping")
@@ -355,13 +568,11 @@ export function PracticalTestView({
       const aiRoadEnv         = getRoadScore("road_env")
       const aiObstacles       = getRoadScore("obstacles")
 
-      // Calculate AI Total (65 marks)
       const aiTotalScore = aiBehavior + aiSeatbelt + aiParkingAlignment + aiParkingStability +
         aiSurroundings + aiPositioning + aiLaneKeeping + aiTurning + aiSignAwareness +
         aiTrafficAware + aiGroundMarks + aiIntersections + aiNormalStop + aiSuddenStop +
         aiIntersectSafety + aiStopCompliance + aiPedestrians + aiVehicles + aiRoadEnv + aiObstacles
 
-      // Manual Total (35 marks)
       const {
         seat_adjust, mirror_adjust, start_move, gear, steering,
         indicator_turn, indicator, overtake_place, overtake_signal,
@@ -372,20 +583,16 @@ export function PracticalTestView({
         indicator_turn + indicator + overtake_place + overtake_signal +
         overtake_watch + overtake_return + reverse_look + reverse_watch
 
-      // Total Score (100 marks)
       const totalScore = aiTotalScore + manualTotalScore
 
       const supabase = createClient()
 
       const insertData: Record<string, any> = {
         user_id: userId,
-        // Face/Behavior Model (4 marks)
         behavior_score: aiBehavior,
         seatbelt_score: aiSeatbelt,
-        // Parking Model (5 marks)
         parking_alignment_score: aiParkingAlignment,
         parking_safe_stop_score: aiParkingStability,
-        // Road Model (56 marks)
         surroundings_score:    aiSurroundings,
         positioning_score:     aiPositioning,
         lane_keeping_score:    aiLaneKeeping,
@@ -402,7 +609,6 @@ export function PracticalTestView({
         vehicles_score:        aiVehicles,
         road_env_score:        aiRoadEnv,
         obstacles_score:       aiObstacles,
-        // Manual Scores (35 marks)
         seat_adjust_score:     seat_adjust,
         mirror_adjust_score:   mirror_adjust,
         start_move_score:      start_move,
@@ -416,11 +622,9 @@ export function PracticalTestView({
         overtake_return_score: overtake_return,
         reverse_look_score:    reverse_look,
         reverse_watch_score:   reverse_watch,
-        // Totals
         ai_total_score:     aiTotalScore,
         manual_total_score: manualTotalScore,
         total_score:        totalScore,
-        // Raw JSON data from models
         face_model_raw:    faceResult,
         parking_model_raw: parkingResult,
         road_model_raw:    roadResult,
@@ -445,263 +649,402 @@ export function PracticalTestView({
   // ─── Guard: not within test window ────────────────────────────────────────
   if (!isWithinTestWindow) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-gray-50 rounded-xl border border-red-200">
-        <svg className="w-16 h-16 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Not Within Test Window</h2>
-        <p className="text-gray-600 max-w-md">
-          The practical test is only available during your scheduled test time. Please come back during your booked time slot.
-        </p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-red-100 p-10 max-w-md w-full">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-5">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">Not Within Test Window</h2>
+          <p className="text-gray-500 leading-relaxed">
+            The practical test is only available during your scheduled test time. Please come back during your booked time slot.
+          </p>
+        </div>
       </div>
     )
   }
 
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+
       {/* Header */}
-      <div className="flex justify-between items-center border-b pb-4">
-        <h1 className="text-3xl font-bold text-gray-800">Practical Test Evaluation</h1>
-        <div className="flex gap-2">
-          {[1, 2, 3, 4].map((s) => (
-            <div
-              key={s}
-              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                step >= s ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"
-              }`}
-            >
-              {s}
-            </div>
-          ))}
+      <div className="space-y-5">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Practical Test Evaluation</h1>
+          <p className="text-sm text-gray-500 mt-1">Complete all steps to submit your driving assessment</p>
         </div>
+        <StepIndicator currentStep={step} />
       </div>
 
       {/* Error banner */}
       {analysisError && (
-        <div className="bg-red-100 text-red-700 p-4 rounded border border-red-300 text-sm whitespace-pre-wrap break-words">
-          <strong>Error:</strong> {analysisError}
-          <br />
-          <span className="text-xs text-red-500">
-            If the Space is waking up, please wait ~30 s then try again — the app will retry automatically.
-          </span>
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex gap-3">
+          <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg className="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-red-700">Analysis Failed</p>
+            <p className="text-sm text-red-600 break-words">{analysisError}</p>
+            <p className="text-xs text-red-400">If the Space is waking up, please wait ~30s then try again.</p>
+          </div>
         </div>
       )}
 
       {/* ── STEP 1: Face & Seatbelt ────────────────────────────────────────── */}
       {step === 1 && (
-        <div className="bg-white p-6 rounded-xl shadow border space-y-4">
-          <h2 className="text-xl font-semibold">1. Driver Face & Seatbelt (AI) — 4 marks</h2>
-          <p className="text-gray-500 text-sm">تسجيل فيديو قصير لوجه السائق (الكاميرا الأمامية).</p>
-
-          <VideoUploader
-            onChange={setFaceVideo}
-            label="Record Face Video"
-            captureType="user"
-            file={faceVideo}
-          />
-
-          {isAnalyzing && analyzingType === "face" && (
-            <div className="space-y-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <ProgressBar elapsed={elapsed} estimateSec={ESTIMATE_SECS.face} />
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">1</div>
+              <div>
+                <h2 className="text-white font-semibold">Driver Face & Seatbelt</h2>
+                <p className="text-blue-200 text-xs mt-0.5">AI Analysis · 4 marks</p>
+              </div>
             </div>
-          )}
+          </div>
 
-          <button
-            disabled={!faceVideo || isAnalyzing}
-            onClick={() => handleAnalyze("face")}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg disabled:opacity-50 w-full hover:bg-blue-700 transition"
-          >
-            {isAnalyzing && analyzingType === "face"
-              ? `Analyzing… (${fmt(elapsed)})`
-              : "Analyze & Go to Step 2"}
-          </button>
+          <div className="p-6 space-y-5">
+            <p className="text-sm text-gray-500 leading-relaxed">
+Record a short video of the driver's face using the front camera.
+            </p>
+
+            <VideoUploader
+              onChange={setFaceVideo}
+              label="Record Face Video"
+              captureType="user"
+              file={faceVideo}
+            />
+
+            {isAnalyzing && analyzingType === "face" && (
+              <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm font-medium text-blue-700">Analyzing video…</span>
+                </div>
+                <ProgressBar elapsed={elapsed} estimateSec={ESTIMATE_SECS.face} />
+              </div>
+            )}
+
+            <button
+              disabled={!faceVideo || isAnalyzing}
+              onClick={() => handleAnalyze("face")}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              {isAnalyzing && analyzingType === "face" ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Analyzing… ({fmt(elapsed)})
+                </>
+              ) : (
+                <>
+                  Analyze & Continue
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       )}
 
       {/* ── STEP 2: Parking ────────────────────────────────────────────────── */}
       {step === 2 && (
-        <div className="bg-white p-6 rounded-xl shadow border space-y-4">
-          <h2 className="text-xl font-semibold">2. Parking Test (AI) — 5 marks</h2>
-          <p className="text-gray-500 text-sm">تسجيل فيديو عملية الاصطفاف (استخدم الكاميرا الخلفية).</p>
-
-          <VideoUploader
-            onChange={setParkingVideo}
-            label="Record Parking Video"
-            captureType="environment"
-            file={parkingVideo}
-          />
-
-          <div className="bg-green-50 p-3 rounded border text-sm space-y-1">
-            <p>
-              ✅ Face AI Done — Behavior:{" "}
-              <strong>{faceResult?.behavior_score?.score_out_of_2 ?? 0}/2</strong> · Seatbelt:{" "}
-              <strong>{faceResult?.seatbelt_score?.score_out_of_2 ?? 0}/2</strong>
-            </p>
-            <p className="text-xs text-gray-500">Total: {(faceResult?.behavior_score?.score_out_of_2 ?? 0) + (faceResult?.seatbelt_score?.score_out_of_2 ?? 0)}/4</p>
-          </div>
-          <ResultVideo url={faceOutputVideoUrl} label="Face analysis output" />
-
-          {isAnalyzing && analyzingType === "parking" && (
-            <div className="space-y-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <ProgressBar elapsed={elapsed} estimateSec={ESTIMATE_SECS.parking} />
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">2</div>
+              <div>
+                <h2 className="text-white font-semibold">Parking Test</h2>
+                <p className="text-blue-200 text-xs mt-0.5">AI Analysis · 5 marks</p>
+              </div>
             </div>
-          )}
+          </div>
 
-          <button
-            disabled={!parkingVideo || isAnalyzing}
-            onClick={() => handleAnalyze("parking")}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg disabled:opacity-50 w-full hover:bg-blue-700 transition"
-          >
-            {isAnalyzing && analyzingType === "parking"
-              ? `Analyzing… (${fmt(elapsed)})`
-              : "Analyze & Go to Step 3"}
-          </button>
+          <div className="p-6 space-y-5">
+            <p className="text-sm text-gray-500 leading-relaxed">
+Recording the parking process using the rear camera
+            </p>
+
+            <SectionDone>
+              <div className="space-y-1.5">
+                <ScoreBadge
+                  score={faceResult?.behavior_score?.score_out_of_2 ?? 0}
+                  max={2}
+                  label="Behavior"
+                />
+                <ScoreBadge
+                  score={faceResult?.seatbelt_score?.score_out_of_2 ?? 0}
+                  max={2}
+                  label="Seatbelt"
+                />
+              </div>
+            </SectionDone>
+
+            <ResultVideo url={faceOutputVideoUrl} label="Face analysis output" />
+
+            <VideoUploader
+              onChange={setParkingVideo}
+              label="Record Parking Video"
+              captureType="environment"
+              file={parkingVideo}
+            />
+
+            {isAnalyzing && analyzingType === "parking" && (
+              <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm font-medium text-blue-700">Analyzing parking video…</span>
+                </div>
+                <ProgressBar elapsed={elapsed} estimateSec={ESTIMATE_SECS.parking} />
+              </div>
+            )}
+
+            <button
+              disabled={!parkingVideo || isAnalyzing}
+              onClick={() => handleAnalyze("parking")}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              {isAnalyzing && analyzingType === "parking" ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Analyzing… ({fmt(elapsed)})
+                </>
+              ) : (
+                <>
+                  Analyze & Continue
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       )}
 
       {/* ── STEP 3: Road ───────────────────────────────────────────────────── */}
       {step === 3 && (
-        <div className="bg-white p-6 rounded-xl shadow border space-y-4">
-          <h2 className="text-xl font-semibold">3. Road Driving (AI) — 56 marks</h2>
-          <p className="text-gray-500 text-sm">تسجيل فيديو القيادة على الطريق.</p>
-
-          <VideoUploader
-            onChange={setRoadVideo}
-            label="Record Road Video"
-            captureType="environment"
-            file={roadVideo}
-          />
-
-          <div className="bg-green-50 p-3 rounded border text-sm space-y-1">
-            <p>
-              ✅ Face AI:{" "}
-              {(faceResult?.behavior_score?.score_out_of_2 ?? 0) +
-                (faceResult?.seatbelt_score?.score_out_of_2 ?? 0)}
-              /4
-            </p>
-            <p>
-              ✅ Parking AI — Alignment: {parkingResult?.alignment ?? "–"} · Stability:{" "}
-              {parkingResult?.stability ?? "–"}
-            </p>
-          </div>
-          <ResultVideo url={parkingOutputVideoUrl} label="Parking analysis output" />
-
-          {isAnalyzing && analyzingType === "road" && (
-            <div className="space-y-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <ProgressBar elapsed={elapsed} estimateSec={ESTIMATE_SECS.road} />
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">3</div>
+              <div>
+                <h2 className="text-white font-semibold">Road Driving</h2>
+                <p className="text-blue-200 text-xs mt-0.5">AI Analysis · 56 marks</p>
+              </div>
             </div>
-          )}
+          </div>
 
-          <button
-            disabled={!roadVideo || isAnalyzing}
-            onClick={() => handleAnalyze("road")}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg disabled:opacity-50 w-full hover:bg-blue-700 transition"
-          >
-            {isAnalyzing && analyzingType === "road"
-              ? `Analyzing… (${fmt(elapsed)})`
-              : "Analyze & Go to Final Review"}
-          </button>
+          <div className="p-6 space-y-5">
+            <p className="text-sm text-gray-500 leading-relaxed">Record a video of driving on the road</p>
+
+            <SectionDone>
+              <div className="space-y-1.5">
+                <ScoreBadge
+                  score={(faceResult?.behavior_score?.score_out_of_2 ?? 0) + (faceResult?.seatbelt_score?.score_out_of_2 ?? 0)}
+                  max={4}
+                  label="Face & Seatbelt"
+                />
+                <ScoreBadge score={parkingResult?.alignment ?? "–"} max={3} label="Parking Alignment" />
+                <ScoreBadge score={parkingResult?.stability ?? "–"} max={2} label="Parking Stability" />
+              </div>
+            </SectionDone>
+
+            <ResultVideo url={parkingOutputVideoUrl} label="Parking analysis output" />
+
+            <VideoUploader
+              onChange={setRoadVideo}
+              label="Record Road Driving Video"
+              captureType="environment"
+              file={roadVideo}
+            />
+
+            {isAnalyzing && analyzingType === "road" && (
+              <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm font-medium text-blue-700">Analyzing road video…</span>
+                </div>
+                <ProgressBar elapsed={elapsed} estimateSec={ESTIMATE_SECS.road} />
+              </div>
+            )}
+
+            <button
+              disabled={!roadVideo || isAnalyzing}
+              onClick={() => handleAnalyze("road")}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              {isAnalyzing && analyzingType === "road" ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Analyzing… ({fmt(elapsed)})
+                </>
+              ) : (
+                <>
+                  Analyze & Go to Final Review
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       )}
 
       {/* ── STEP 4: Final Review ───────────────────────────────────────────── */}
       {step === 4 && (
-        <div className="bg-white p-6 rounded-xl shadow border space-y-6">
-          <h2 className="text-xl font-bold">4. Final Review & Manual Grading</h2>
-
-          <ResultVideo url={roadOutputVideoUrl} label="Road analysis output" />
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* AI scores */}
-            <div className="space-y-4">
-              <h3 className="font-bold text-lg text-green-700 border-b pb-2">AI Grades (65/100)</h3>
-              <div className="bg-gray-50 p-4 rounded text-sm space-y-2">
-                <p className="font-semibold text-blue-600">Face & Behavior (4 marks):</p>
-                <p className="pl-4">Behavior: {faceResult?.behavior_score?.score_out_of_2 ?? 0}/2</p>
-                <p className="pl-4">Seatbelt: {faceResult?.seatbelt_score?.score_out_of_2 ?? 0}/2</p>
-
-                <p className="font-semibold text-blue-600 mt-3">Parking (5 marks):</p>
-                {/* FIXED: show raw string values from parking model directly */}
-                <p className="pl-4">Alignment: {parkingResult?.alignment ?? "0/3"}</p>
-                <p className="pl-4">Stability: {parkingResult?.stability ?? "0/2"}</p>
-
-                {/* FIXED: roadResult.categories (no road_evaluation wrapper) */}
-                {roadResult?.categories && (
-                  <div className="mt-4 border-t pt-2">
-                    <p className="font-bold text-blue-600">
-                      Road Model: {roadResult.achieved_marks ?? 0}/{roadResult.total_marks ?? 56}
-                    </p>
-                    {roadResult.categories.map((cat: any, idx: number) => (
-                      <p key={idx} className="pl-4 text-gray-600 text-xs">
-                        {/* Display English label, fallback to original name */}
-                        {ROAD_CATEGORY_LABELS[cat.name] ?? cat.name}: {cat.score}/{cat.max}
-                      </p>
-                    ))}
-                  </div>
-                )}
-                {!roadResult?.categories && (
-                  <p className="text-red-500 mt-2">Road API result missing.</p>
-                )}
+        <div className="space-y-5">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">4</div>
+                <div>
+                  <h2 className="text-white font-semibold">Final Review & Manual Grading</h2>
+                  <p className="text-blue-200 text-xs mt-0.5">Review AI scores and enter manual marks</p>
+                </div>
               </div>
             </div>
 
-            {/* Manual scores */}
-            <div className="space-y-4">
-              <h3 className="font-bold text-lg text-orange-700 border-b pb-2">
-                Manual Marks (35/100)
-              </h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                {(
-                  [
-                    ["seat_adjust",     "Seat Adjust",       2],
-                    ["mirror_adjust",   "Mirror Adjust",     2],
-                    ["start_move",      "Start Move",        2],
-                    ["gear",            "Gear Shift",        4],
-                    ["steering",        "Steering",          4],
-                    ["indicator_turn",  "Signal/Turns",      3],
-                    ["indicator",       "Signal/Rules",      3],
-                    ["overtake_place",  "Overtake Spot",     3],
-                    ["overtake_signal", "Overtake Signal",   2],
-                    ["overtake_watch",  "Overtake Monitor",  3],
-                    ["overtake_return", "Overtake Return",   2],
-                    ["reverse_look",    "Look Back",         2],
-                    ["reverse_watch",   "Reverse Monitor",   3],
-                  ] as [keyof typeof manualScores, string, number][]
-                ).map(([key, label, max]) => (
-                  <label
-                    key={key}
-                    className={key === "reverse_watch" ? "col-span-2" : ""}
-                  >
-                    {label} ({max})
-                    <input
-                      type="number"
-                      min={0}
-                      max={max}
-                      className="w-full border p-1 rounded mt-1"
-                      value={manualScores[key]}
-                      onChange={(e) =>
-                        setManualScores({ ...manualScores, [key]: Number(e.target.value) })
-                      }
-                    />
-                  </label>
-                ))}
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Manual Total: {Object.values(manualScores).reduce((a, b) => a + b, 0)}/35
-              </p>
+            <div className="p-6">
+              <ResultVideo url={roadOutputVideoUrl} label="Road analysis output" />
             </div>
           </div>
 
+          <div className="grid md:grid-cols-2 gap-5">
+            {/* AI Scores */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                <h3 className="font-semibold text-gray-800">AI Grades</h3>
+                <span className="ml-auto text-sm font-bold text-blue-600">65 marks</span>
+              </div>
+              <div className="p-5 space-y-4">
+                {/* Face */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Face & Behavior · 4 marks</p>
+                  <div className="space-y-1.5">
+                    <ScoreBadge score={faceResult?.behavior_score?.score_out_of_2 ?? 0} max={2} label="Behavior" />
+                    <ScoreBadge score={faceResult?.seatbelt_score?.score_out_of_2 ?? 0} max={2} label="Seatbelt" />
+                  </div>
+                </div>
+                {/* Parking */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Parking · 5 marks</p>
+                  <div className="space-y-1.5">
+                    <ScoreBadge score={parkingResult?.alignment ?? "0/3"} max={3} label="Alignment" />
+                    <ScoreBadge score={parkingResult?.stability ?? "0/2"} max={2} label="Stability" />
+                  </div>
+                </div>
+                {/* Road */}
+                {roadResult?.categories ? (
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                      Road Model · {roadResult.achieved_marks ?? 0}/{roadResult.total_marks ?? 56} marks
+                    </p>
+                    <div className="space-y-1">
+                      {roadResult.categories.map((cat: any, idx: number) => (
+                        <div key={idx} className="flex items-center justify-between py-1 px-3 rounded-lg bg-gray-50 text-xs">
+                          <span className="text-gray-600">{ROAD_CATEGORY_LABELS[cat.name] ?? cat.name}</span>
+                          <span className="font-semibold text-gray-700">{cat.score}/{cat.max}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-red-500 bg-red-50 p-3 rounded-lg">Road API result missing.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Manual Scores */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-orange-500" />
+                <h3 className="font-semibold text-gray-800">Manual Marks</h3>
+                <span className="ml-auto text-sm font-bold text-orange-600">35 marks</span>
+              </div>
+              <div className="p-5">
+                <div className="grid grid-cols-2 gap-3">
+                  {(
+                    [
+                      ["seat_adjust",     "Seat Adjust",       2],
+                      ["mirror_adjust",   "Mirror Adjust",     2],
+                      ["start_move",      "Start Move",        2],
+                      ["gear",            "Gear Shift",        4],
+                      ["steering",        "Steering",          4],
+                      ["indicator_turn",  "Signal/Turns",      3],
+                      ["indicator",       "Signal/Rules",      3],
+                      ["overtake_place",  "Overtake Spot",     3],
+                      ["overtake_signal", "Overtake Signal",   2],
+                      ["overtake_watch",  "Overtake Monitor",  3],
+                      ["overtake_return", "Overtake Return",   2],
+                      ["reverse_look",    "Look Back",         2],
+                      ["reverse_watch",   "Reverse Monitor",   3],
+                    ] as [keyof typeof manualScores, string, number][]
+                  ).map(([key, label, max]) => (
+                    <div
+                      key={key}
+                      className={`${key === "reverse_watch" ? "col-span-2" : ""} space-y-1`}
+                    >
+                      <label className="text-xs font-medium text-gray-600">
+                        {label} <span className="text-gray-400">(/{max})</span>
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={max}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        value={manualScores[key]}
+                        onChange={(e) =>
+                          setManualScores({ ...manualScores, [key]: Number(e.target.value) })
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                  <span className="text-sm text-gray-500 font-medium">Manual Total</span>
+                  <span className="text-sm font-bold text-orange-600">
+                    {Object.values(manualScores).reduce((a, b) => a + b, 0)}/35
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Submit */}
           <button
             disabled={isAnalyzing}
             onClick={submitFinalTest}
-            className="bg-green-600 text-white px-8 py-4 rounded-lg font-bold text-lg w-full hover:bg-green-700 transition disabled:opacity-50"
+            className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 px-8 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-base shadow-sm shadow-green-200"
           >
-            {isAnalyzing ? "Saving to Dashboard…" : "Submit Final Test (100/100)"}
+            {isAnalyzing ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Saving to Dashboard…
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+                Submit Final Test (100/100)
+              </>
+            )}
           </button>
         </div>
       )}
+
+      {/* ── Video Section: How analysis works ──────────────────────────────── */}
+      <VideoSection />
+
     </div>
   )
 }

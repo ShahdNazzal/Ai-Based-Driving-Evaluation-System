@@ -5,7 +5,7 @@ import { Toaster } from "sonner"
 
 import "./globals.css"
 
-import ChatBubble from "@/components/ChatBubble";
+import ChatBubbleWrapper from "@/components/ChatBubbleWrapper";
 
 
 const inter = Inter({
@@ -45,7 +45,7 @@ export default function RootLayout({
   <Toaster position="top-right" richColors />
 
   {/* 💬 الشات بوت */}
-  <ChatBubble />
+  <ChatBubbleWrapper />
 </body>
 
 

@@ -89,20 +89,14 @@ export function TestDatesView({
 
     toast.success("Test date booked successfully.")
 
-
-
-toast.info(
-  "Please go to the traffic department to complete the payment procedures."
-)
-
+    toast.info(
+      "Please go to the traffic department to complete the payment procedures."
+    )
 
     setLoading(null)
 
     startTransition(() => {
       router.refresh()
-
-
-
     })
   }
 
@@ -141,10 +135,12 @@ toast.info(
 
     if (!dates.length) {
       return (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-12">
-          <Calendar className="h-10 w-10 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-sky-200 bg-sky-50/50 py-16">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-[0_0_18px_4px_rgba(56,189,248,0.35)]">
+            <Calendar className="h-7 w-7 text-sky-500" />
+          </div>
 
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p className="mt-4 text-sm text-slate-500">
             No upcoming test dates available at the moment.
           </p>
         </div>
@@ -152,7 +148,7 @@ toast.info(
     }
 
     return (
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {dates.map((date) => {
           const isSelected = selectedId === date.id
           const hasSelectedDate = Boolean(selectedId)
@@ -160,38 +156,49 @@ toast.info(
           return (
             <Card
               key={date.id}
-              className={`border-border bg-card transition-all ${
-                isSelected ? "border-primary ring-1 ring-primary/30" : ""
+              className={`group relative overflow-hidden border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
+                isSelected
+                  ? "border-sky-400 shadow-[0_0_0_1px_rgba(56,189,248,0.4),0_8px_24px_-8px_rgba(56,189,248,0.4)]"
+                  : "border-sky-100 shadow-sm"
               }`}
             >
-              <CardContent className="flex flex-col gap-3 p-4">
+              {/* subtle glow accent in corner */}
+              <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-sky-400/10 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
+
+              <CardContent className="relative flex flex-col gap-3 p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2 text-sm font-medium text-card-foreground">
-                    <Calendar className="h-4 w-4 text-primary" />
+                  <div className="flex items-center gap-2.5 text-sm font-semibold text-slate-800">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-blue-700 shadow-[0_0_10px_2px_rgba(56,189,248,0.5)]">
+                      <Calendar className="h-4 w-4 text-white" />
+                    </span>
                     {format(new Date(date.test_date), "EEEE, MMMM d, yyyy")}
                   </div>
 
                   {isSelected && (
-                    <Badge className="border-primary/20 bg-primary/10 text-primary">
+                    <Badge className="border-sky-200 bg-sky-50 text-sky-600 shadow-[0_0_8px_1px_rgba(56,189,248,0.35)]">
                       Selected
                     </Badge>
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5" />
+                <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-sky-50">
+                    <MapPin className="h-3.5 w-3.5 text-sky-500" />
+                  </span>
                   {date.location}
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-3.5 w-3.5" />
+                <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-sky-50">
+                    <Clock className="h-3.5 w-3.5 text-sky-500" />
+                  </span>
                   {format(new Date(date.start_time), "h:mm a")} -{" "}
                   {format(new Date(date.end_time), "h:mm a")}
                 </div>
 
                 {isSelected && selectedSelection ? (
                   <div className="mt-1 flex flex-col gap-2">
-                    <div className="flex items-center gap-1.5 text-sm text-green-600">
+                    <div className="flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-600">
                       <CheckCircle2 className="h-4 w-4" />
                       You are booked for this date
                     </div>
@@ -210,7 +217,7 @@ toast.info(
                 ) : !hasSelectedDate ? (
                   <Button
                     size="sm"
-                    className="mt-1"
+                    className="mt-1 bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-[0_0_12px_1px_rgba(56,189,248,0.45)] hover:from-sky-600 hover:to-blue-700"
                     onClick={() => handleSelect(testType, date.id)}
                     disabled={loading === date.id || isPending}
                   >
@@ -227,20 +234,35 @@ toast.info(
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground lg:text-3xl">
-          Available Test Dates
-        </h1>
+      <div className="mb-6 flex items-center gap-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-blue-700 shadow-[0_0_20px_4px_rgba(56,189,248,0.5)]">
+          <Calendar className="h-6 w-6 text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 lg:text-3xl">
+            Available Test Dates
+          </h1>
 
-        <p className="mt-1 text-muted-foreground">
-          Select your theory or practical driving test date.
-        </p>
+          <p className="mt-1 text-slate-500">
+            Select your theory or practical driving test date.
+          </p>
+        </div>
       </div>
 
       <Tabs defaultValue="theory">
-        <TabsList className="mb-4">
-          <TabsTrigger value="theory">Theory Test</TabsTrigger>
-          <TabsTrigger value="practical">Practical Test</TabsTrigger>
+        <TabsList className="mb-6 inline-flex h-auto gap-1 rounded-2xl border border-sky-100 bg-sky-50/60 p-1.5 shadow-inner">
+          <TabsTrigger
+            value="theory"
+            className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-500 transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-[0_0_14px_2px_rgba(56,189,248,0.5)]"
+          >
+            Theory Test
+          </TabsTrigger>
+          <TabsTrigger
+            value="practical"
+            className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-500 transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-[0_0_14px_2px_rgba(56,189,248,0.5)]"
+          >
+            Practical Test
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="theory">

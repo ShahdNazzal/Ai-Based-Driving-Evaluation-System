@@ -737,7 +737,7 @@ export function HeroSection() {
                 {/* Instagram */}
                 <li>
                   <a
-                    href="https://www.instagram.com/roxaplatform/"
+                    href="https://www.instagram.com/roxaplatformjo/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2"
@@ -752,7 +752,7 @@ export function HeroSection() {
                       onMouseEnter={(e) => { (e.currentTarget as HTMLSpanElement).style.color = "var(--blue-bright)" }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLSpanElement).style.color = "var(--tx-sec)" }}
                     >
-                      @platformroxa
+                      @roxaplatformjo
                     </span>
                   </a>
                 </li>

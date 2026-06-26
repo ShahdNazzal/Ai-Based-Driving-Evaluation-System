@@ -17,146 +17,142 @@ type Sign = {
 // --- Common Mistakes ---
 const mistakes: Mistake[] = [
   {
-    n: "عدم تفقد المرايا قبل أي حركة",
-    d: "نسيان النظر للمرايا قبل تغيير المسرب أو التوقف أو الانعطاف.",
-    t: "شيّك المرايا بشكل مستمر قبل وأثناء القيادة"
+    n: "Not checking mirrors before any movement",
+    d: "Forgetting to check the mirrors before changing lanes, stopping, or turning.",
+    t: "Check your mirrors continuously before and while driving"
   },
   {
-    n: "عدم إعطاء إشارة قبل تغيير الاتجاه",
-    d: "تحريك السيارة بدون تشغيل الغماز أو تشغيله متأخر.",
-    t: "شغّل الإشارة قبل الحركة بثواني كافية"
+    n: "Not signaling before changing direction",
+    d: "Moving the car without turning on the indicator, or turning it on too late.",
+    t: "Turn on the signal a few seconds before moving"
   },
   {
-    n: "التوقف غير الكامل عند إشارة قف",
-    d: "عدم إيقاف السيارة بشكل تام عند علامة التوقف.",
-    t: "توقف بالكامل وعدّ 2–3 ثواني قبل المتابعة"
+    n: "Not coming to a complete stop at a stop sign",
+    d: "Failing to bring the car to a full stop at a stop sign.",
+    t: "Stop completely and count 2–3 seconds before continuing"
   },
   {
-    n: "الدخول الخاطئ إلى الدوّار",
-    d: "الدخول بسرعة أو بدون إعطاء أولوية للسيارات داخل الدوّار.",
-    t: "خفف السرعة وادخل فقط عند توفر الأمان"
+    n: "Entering a roundabout incorrectly",
+    d: "Entering too fast or without giving priority to cars already inside the roundabout.",
+    t: "Slow down and only enter when it is safe"
   },
   {
-    n: "عدم ترك مسافة أمان كافية",
-    d: "الاقتراب الزائد من السيارة الأمامية أثناء السير.",
-    t: "حافظ على مسافة لا تقل عن 2–3 ثواني"
+    n: "Not keeping a sufficient safety distance",
+    d: "Getting too close to the car in front while driving.",
+    t: "Maintain a distance of at least 2–3 seconds"
   },
   {
-    n: "تغيير المسرب بشكل مفاجئ",
-    d: "الانتقال بين المسارب بدون إشارة أو بدون التأكد من الطريق.",
-    t: "شغّل الإشارة وتأكد من الخلو قبل التغيير"
+    n: "Changing lanes suddenly",
+    d: "Moving between lanes without signaling or without checking the road is clear.",
+    t: "Turn on the signal and make sure the lane is clear before changing"
   },
   {
-    n: "السرعة غير المناسبة للطريق",
-    d: "القيادة أسرع أو أبطأ من الحد المسموح.",
-    t: "التزم بالسرعة حسب اللوحات والإشارات"
+    n: "Inappropriate speed for the road",
+    d: "Driving faster or slower than the allowed limit.",
+    t: "Follow the speed shown on signs and signals"
   },
   {
-    n: "عدم الالتزام بالمسرب الصحيح",
-    d: "الخروج من المسرب بشكل غير منظم أثناء القيادة.",
-    t: "حافظ على مسارك ولا تغيّره إلا للضرورة"
+    n: "Not staying in the correct lane",
+    d: "Drifting out of the lane in a disorganized way while driving.",
+    t: "Keep your lane and only change it when necessary"
   },
   {
-    n: "الفرملة المفاجئة بدون سبب",
-    d: "التوقف الحاد الذي يسبب خطورة على المركبات الخلفية.",
-    t: "خفف السرعة تدريجياً قبل التوقف"
+    n: "Sudden braking without reason",
+    d: "Stopping abruptly in a way that endangers vehicles behind you.",
+    t: "Reduce speed gradually before stopping"
   },
   {
-    n: "نسيان إطفاء الغماز بعد الانعطاف",
-    d: "ترك الإشارة تعمل بعد إنهاء الحركة.",
-    t: "تأكد من إطفاء الغماز بعد كل منعطف"
+    n: "Forgetting to turn off the indicator after turning",
+    d: "Leaving the signal on after completing the turn.",
+    t: "Make sure to turn off the indicator after every turn"
   },
   {
-    n: "ضعف التحكم بالمقود",
-    d: "لف المقود بطريقة خاطئة أو غير مستقرة أثناء المنعطفات.",
-    t: "استخدم أسلوب اليدين 9 و 3 بثبات"
+    n: "Poor steering wheel control",
+    d: "Turning the steering wheel incorrectly or unsteadily during turns.",
+    t: "Use the steady 9 and 3 hand position"
   },
   {
-    n: "التوتر أثناء الفحص العملي",
-    d: "الارتباك وفقدان التركيز أثناء اختبار القيادة.",
-    t: "تنفس بهدوء وركز على كل خطوة قبل تنفيذها"
+    n: "Nervousness during the practical exam",
+    d: "Becoming anxious and losing focus during the driving test.",
+    t: "Breathe calmly and focus on each step before performing it"
   }
 ];
 
-// --- ALL TRAFFIC SIGNS (كلهم مع بعض) ---
+// --- ALL TRAFFIC SIGNS ---
 const signs: Sign[] = [
-  // ✏️ عدلي هون بس (حطي صورك + المسميات + الشرح)
-
   {
-    title:"أفضلية المرور في الشارع الضيق",
+    title: "Priority of Way on a Narrow Street",
     img: "/شواخص/افضلية_المرور_في_الشارع_الضيق.png",
   },
-  
   {
-    title: "الشواخص الارشادية",
+    title: "Informative Signs",
     img: "/شواخص/الشواخص_الارشادية.png",
   },
   {
-    title: "الشواخص الارشادية ",
+    title: "Informative Signs",
     img: "/شواخص/الشواخص_الارشادية2.png",
   },
   {
-    title: "الشواخص الارشادية ",
+    title: "Informative Signs",
     img: "/شواخص/الشواخص_الارشادية3.png",
   },
   {
-    title: "الشواخص الالزامية",
+    title: "Mandatory Signs",
     img: "/شواخص/الشواخص_الالزامية.png",
   },
   {
-    title: "الشواخص الالزامية ",
+    title: "Mandatory Signs",
     img: "/شواخص/الشواخص_الالزامية2.png",
   },
-
   {
-    title: "الشواخص الالزامية ",
+    title: "Mandatory Signs",
     img: "/شواخص/الشواخص_الالزامية3.png",
   },
   {
-    title: "الشواخص التحذيرية",
+    title: "Warning Signs",
     img: "/شواخص/الشواخص_التحذيرية.png",
   },
   {
-    title: "الشواخص التحذيرية ",
+    title: "Warning Signs",
     img: "/شواخص/الشواخص_التحذيرية2.png",
   },
   {
-    title: "الشواخص التحذيرية ",
+    title: "Warning Signs",
     img: "/شواخص/الشواخص_التحذيرية3.png",
   },
-   {
-    title: "الشواخص السياحية",
+  {
+    title: "Tourist Signs",
     img: "/شواخص/الشواخص_السياحية.png",
   },
   {
-    title: " تنظيم حركة المرور",
+    title: "Traffic Flow Regulation",
     img: "/شواخص/شواخص_تنظيم_حركة_المرور4.png",
   },
-   {
-    title: " الشواخص السياحية",
+  {
+    title: "Tourist Signs",
     img: "/شواخص/الشواخص_السياحية2.png",
   },
-   {
-    title: "انتهاء منطقة المنع",
+  {
+    title: "End of Restricted Zone",
     img: "/شواخص/انتهاء_منطقة_المنع.png",
   },
-   {
+  {
     title: " ",
     img: "/شواخص/ش1.png",
   },
-   {
+  {
     title: " ",
     img: "/شواخص/ش2.png",
   },
-   {
+  {
     title: " ",
     img: "/شواخص/ش3.png",
   },
-   {
+  {
     title: " ",
     img: "/شواخص/ش4.png",
   },
-   {
+  {
     title: " ",
     img: "/شواخص/ش5.png",
   },
@@ -229,58 +225,53 @@ const signs: Sign[] = [
     img: "/شواخص/ش22.png",
   },
   {
-    title: " شواخص المنع",
+    title: "Prohibition Signs",
     img: "/شواخص/شواخص_المنع1.png",
   },
   {
-    title: " شواخص المنع",
+    title: "Prohibition Signs",
     img: "/شواخص/شواخص_المنع2.png",
   },
   {
-    title: " شواخص المنع",
+    title: "Prohibition Signs",
     img: "/شواخص/شواخص_المنع3.png",
   },
   {
-    title: " شواخص المنع",
+    title: "Prohibition Signs",
     img: "/شواخص/شواخص_المنع4.png",
   },
   {
-    title: " شواخص المنع",
+    title: "Prohibition Signs",
     img: "/شواخص/شواخص_المنع5.png",
   },
   {
-    title: " شواخص المنع",
+    title: "Prohibition Signs",
     img: "/شواخص/شواخص_المنع6.png",
   },
   {
-    title: " شواخص المنع",
+    title: "Prohibition Signs",
     img: "/شواخص/شواخص_المنع7.png",
   },
   {
-    title: " شواخص المنع",
+    title: "Prohibition Signs",
     img: "/شواخص/شواخص_المنع8.png",
   },
   {
-    title: " شواخص المنع",
+    title: "Prohibition Signs",
     img: "/شواخص/شواخص_المنع2.png",
   },
- {
-    title: "تنظيم حركة المرور",
+  {
+    title: "Traffic Flow Regulation",
     img: "/شواخص/شواخص_تنظيم_حركة_المرور2.png",
   },
   {
-    title: " تنظيم حركة المرور",
+    title: "Traffic Flow Regulation",
     img: "/شواخص/شواخص_تنظيم_حركة_المرور3.png",
   },
-  
-
-  
   {
-    title: "اسم الشاخصة",
+    title: "No Stopping / No Parking",
     img: "/شواخص/شواخص_ممنواع_الوقوف_والتوقف.png",
   },
-    
-  // 👇 كملي نفس النمط لكل الصور (5 + 16 + 23 + 1 = كلهم هون)
 ];
 
 // --- Component ---
@@ -297,10 +288,9 @@ export default function BookPage() {
             </div>
             <div>
               <span className="text-sm font-semibold text-gray-800">
-                    الأخطاء الشائعة
+                Common Mistakes
               </span>
               <span className="text-xs text-gray-400 ml-2">
-               
               </span>
             </div>
           </div>
@@ -349,7 +339,6 @@ export default function BookPage() {
             </div>
           </div>
 
-          {/* 🔥 كل الصور بنفس الجريد */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {signs.map((item, i) => (
               <div
@@ -367,69 +356,66 @@ export default function BookPage() {
           </div>
         </div>
 
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 items-start mt-10">
 
+          {/* LEFT VIDEO */}
+          <div className="bg-white/70 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg p-4 hover:shadow-2xl transition-all duration-300">
 
+            <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+              🎥 Learning Series with Trainer Raad Awad
+            </h2>
 
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-md border border-gray-100">
+              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-cyan-500 opacity-20 blur-xl"></div>
 
+              <iframe
+                className="relative w-full h-full rounded-xl"
+                src="https://www.youtube.com/embed/xj8eQniMJJw"
+                title="Driving Lesson"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
 
-<div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <p className="text-xs text-gray-500 mt-3">
+              Step-by-step explanation of driving basics 🚗
+            </p>
+          </div>
 
-  {/* LEFT VIDEO */}
-  <div className="bg-white/70 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg p-4 hover:shadow-2xl transition-all duration-300">
+          {/* RIGHT VIDEO */}
+          <div className="bg-white/70 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg p-4 hover:shadow-2xl transition-all duration-300">
 
-    <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-      🎥 سلسلة للتعلم مع المدرب رعد عواد
-    </h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+              🚗 Learn How to Park a Car
+            </h2>
 
-    <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-md border border-gray-100">
-      <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-cyan-500 opacity-20 blur-xl"></div>
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-md border border-gray-100">
+              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 opacity-20 blur-xl"></div>
 
-      <iframe
-        className="relative w-full h-full rounded-xl"
-        src="https://www.youtube.com/embed/xj8eQniMJJw"
-        title="Driving Lesson"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      />
-    </div>
+              <iframe
+                className="relative w-full h-full rounded-xl"
+                src="https://www.youtube.com/embed/9lYZ0G4QTI8"
+                title="Car Parking Lesson"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
 
-    <p className="text-xs text-gray-500 mt-3">
-      شرح أساسيات القيادة خطوة بخطوة 🚗
-    </p>
-  </div>
+            <p className="text-xs text-gray-500 mt-3">
+              A practical guide to parking your car safely and easily 🅿️
+            </p>
+          </div>
 
-  {/* RIGHT VIDEO */}
-  <div className="bg-white/70 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg p-4 hover:shadow-2xl transition-all duration-300">
+        </div>
 
-    <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-      🚗 تعلم اصطفاف السيارة
-    </h2>
+        {/* ================= COPYRIGHT FOOTER ================= */}
+        <div className="mt-12 pt-6 border-t border-gray-200 text-center">
+          <p className="text-xs text-gray-500">
+            All rights reserved to Trainer Fadi Awad. The information provided is verified and was supplied by the trainer. Contact: +962799621717
+          </p>
+        </div>
 
-    <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-md border border-gray-100">
-      <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 opacity-20 blur-xl"></div>
-
-      <iframe
-        className="relative w-full h-full rounded-xl"
-        src="https://www.youtube.com/embed/9lYZ0G4QTI8"
-        title="Car Parking Lesson"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      />
-    </div>
-
-    <p className="text-xs text-gray-500 mt-3">
-      شرح عملي لكيفية اصطفاف السيارة بسهولة وأمان 🅿️
-    </p>
-  </div>
-
- </div>
- </div>
-
-
-
-
-
-
+      </div>
     </div>
   );
 }

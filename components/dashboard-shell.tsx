@@ -71,20 +71,13 @@ export function DashboardShell({
         }`}
       >
         {/* Logo */}
-
-
-
-
-
-
-
         <div className="flex h-16 items-center justify-between border-b border-border px-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <CarFront className="h-4 w-4 text-primary-foreground" />
+          <Link href="/dashboard" className="flex items-center gap-2.5">
+            <div className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-[0_0_14px_3px_rgba(var(--primary-rgb,59,130,246),0.55)]">
+              <CarFront className="h-4 w-4 text-primary-foreground drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
             </div>
-            <span className="text-base font-bold text-card-foreground">
-             ROXA
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-base font-bold tracking-wide text-transparent">
+              ROXA
             </span>
           </Link>
           <button
@@ -96,13 +89,6 @@ export function DashboardShell({
           </button>
         </div>
 
-
-
-
-
-
-
-
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto p-3">
           <ul className="flex flex-col gap-1">
@@ -113,13 +99,16 @@ export function DashboardShell({
                   <Link
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors ${
+                    className={`group relative flex items-center gap-3 overflow-hidden rounded-lg px-3 py-3 text-sm font-medium transition-colors ${
                       isActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-secondary hover:text-card-foreground"
                     }`}
                   >
-                    <item.icon className="h-4 w-4 shrink-0" />
+                    {isActive && (
+                      <span className="absolute left-0 top-0 h-full w-0.5 bg-primary" />
+                    )}
+                    <item.icon className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
                     {item.label}
                     {isActive && (
                       <ChevronRight className="ml-auto h-4 w-4" />
@@ -133,13 +122,18 @@ export function DashboardShell({
 
         {/* User section */}
         <div className="border-t border-border p-3">
-          <div className="mb-2 rounded-lg bg-secondary/50 p-3">
-            <p className="text-sm font-medium text-card-foreground truncate">
-              {user.fullName}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {user.email}
-            </p>
+          <div className="mb-2 flex items-center gap-3 rounded-lg bg-secondary/50 p-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-sm font-bold text-primary-foreground shadow-[0_0_10px_2px_rgba(var(--primary-rgb,59,130,246),0.35)]">
+              {user.fullName.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-card-foreground">
+                {user.fullName}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {user.email}
+              </p>
+            </div>
           </div>
           <form action={signOut}>
             <Button
@@ -168,7 +162,7 @@ export function DashboardShell({
           </button>
           <div className="flex-1" />
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-sm font-bold text-primary-foreground shadow-[0_0_8px_1px_rgba(var(--primary-rgb,59,130,246),0.4)]">
               {user.fullName.charAt(0).toUpperCase()}
             </div>
           </div>

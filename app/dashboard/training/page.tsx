@@ -8,8 +8,12 @@ export default function TrainingPage() {
         position: "relative",
       }}
     >
+      <link rel="preconnect" href="https://alqemahdriving.com" />
+      <link rel="dns-prefetch" href="https://alqemahdriving.com" />
+
       <iframe
         src="https://alqemahdriving.com/الفئتين-الثالثة-والرابعة/"
+        loading="eager"
         style={{
           width: "100%",
           height: "3350px",
