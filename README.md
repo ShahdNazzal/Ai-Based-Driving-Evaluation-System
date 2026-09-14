@@ -190,7 +190,6 @@ npm start
 
 ## 🚀 Hugging Face Spaces: 
 
-
 https://huggingface.co/spaces/shahednazzal/road_model
 https://huggingface.co/spaces/shahednazzal/parking
 https://huggingface.co/spaces/taimaa47/behavior-seatbelt
