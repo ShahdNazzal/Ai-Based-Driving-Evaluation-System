@@ -161,18 +161,9 @@ npm start
 
 ---
 
-## 👥 Team
 
-This project was developed by a team of 4 as a graduation project for the Data Science & Artificial Intelligence program at Yarmouk University, supervised by **Dr. Enas A. Alikhashashneh**.
 
-| Name | Student ID |
-|---|---|
-| Shahed Nazzal | 2022905047 |
-| Bara'a Abdelalghani | 2022805016 |
-| Taima'a Freahat | 2022905018 |
-| Sadeen Abukhadra | 2022905042 |
 
----
 
 ## ⚠️ Limitations
 
@@ -193,3 +184,13 @@ This project was developed by a team of 4 as a graduation project for the Data S
 ## 📄 License
 
 <!-- Add your license here, e.g. MIT -->
+
+
+
+
+## 🚀 Hugging Face Spaces: 
+
+
+https://huggingface.co/spaces/shahednazzal/road_model
+https://huggingface.co/spaces/shahednazzal/parking
+https://huggingface.co/spaces/taimaa47/behavior-seatbelt
