@@ -53,19 +53,18 @@ The system evaluates the practical exam out of **100 marks**:
 <div align="center">
   <img src="./screenshots/7.png" width="220">
   <img src="./screenshots/8.png" width="220">
-  <img src="./screenshots/16.png" width="220">
+  <img src="./screenshots/10.png" width="220">
 </div>
 
 <div align="center">
-  <img src="./screenshots/17.png" width="220">
-  <img src="./screenshots/18.png" width="220">
+ 
   <img src="./screenshots/12.png" width="220">
 </div>
 
 <div align="center">
   <img src="./screenshots/13.png" width="220">
   <img src="./screenshots/14.png" width="220">
-  <img src="./screenshots/15.png" width="220">
+ 
   
 </div>
 
