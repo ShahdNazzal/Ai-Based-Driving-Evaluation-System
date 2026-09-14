@@ -2,9 +2,6 @@
 
 An AI-powered web platform that supports practical driving license examinations in Jordan by combining computer vision-based video analysis with human examiner input. Built as a graduation project for the Data Science & Artificial Intelligence program at Yarmouk University.
 
-<!-- Add a homepage screenshot here -->
-<!-- ![DriveSkills Homepage](./screenshots/homepage.png) -->
-
 ---
 
 ## 📖 Overview
@@ -13,13 +10,13 @@ Traditional practical driving exams rely entirely on a human examiner's real-tim
 
 The system evaluates the practical exam out of **100 marks**:
 
-| Evaluation Source | Purpose | Marks |
-|---|---|---|
-| Road Analysis API | Road driving behavior across 16 criteria | 56 |
-| Parking Evaluation API | Parking alignment and stability | 5 |
-| Driver Monitoring API | Driver behavior and seatbelt usage | 4 |
-| Manual Examiner Entry | Human judgment criteria (mirrors, gear usage, etc.) | 35 |
-| **Total** | | **100** |
+| Evaluation Source      | Purpose                                  |   Marks |
+| ---------------------- | ---------------------------------------- | ------: |
+| Road Analysis API      | Road driving behavior across 16 criteria |      56 |
+| Parking Evaluation API | Parking alignment and stability          |       5 |
+| Driver Monitoring API  | Driver behavior and seatbelt usage       |       4 |
+| Manual Examiner Entry  | Human judgment criteria                  |      35 |
+| **Total**              |                                          | **100** |
 
 **AI contributes 65% of the final score; the examiner contributes the remaining 35%.**
 
@@ -27,98 +24,234 @@ The system evaluates the practical exam out of **100 marks**:
 
 ## ✨ Features
 
-- 🔐 Secure authentication and role-based dashboard (Supabase Auth)
-- 🎥 Video upload for three exam stages: road driving, parking, and driver monitoring
-- 🤖 Three independent AI APIs for automated video analysis
-- 📊 Transparent score breakdown (AI score + manual score → final score)
-- 🎮 Educational Driving Game for interactive learning
-- 💬 Chatbot Assistant for platform guidance
-- 👩‍🏫 Theory Driving Instructors section for exam preparation support
+* Secure authentication and role-based dashboard
+* Video upload for road driving, parking, and driver monitoring
+* Three independent AI APIs for automated video analysis
+* Transparent score breakdown
+* Educational Driving Game
+* Chatbot Assistant for platform guidance
+* Theory Driving Instructors section
+* Practical driving exam evaluation
+* AI-assisted scoring with human examiner input
 
-<!-- Add feature screenshots here -->
-<!-- ![Dashboard](./screenshots/dashboard.png) -->
-<!-- ![Practical Test Page](./screenshots/practical-test.png) -->
+---
+
+## 🖥️ Website
+
+<div align="center">
+  <img src="./1.png" width="220">
+  <img src="./2.png" width="220">
+  <img src="./3.png" width="220">
+</div>
+
+<div align="center">
+  <img src="./4.png" width="220">
+  <img src="./5.png" width="220">
+  <img src="./6.png" width="220">
+</div>
+
+<div align="center">
+  <img src="./7.png" width="220">
+  <img src="./8.png" width="220">
+  <img src="./9.png" width="220">
+</div>
+
+<div align="center">
+  <img src="./10.png" width="220">
+  <img src="./11.png" width="220">
+  <img src="./12.png" width="220">
+</div>
+
+<div align="center">
+  <img src="./13.png" width="220">
+  <img src="./14.png" width="220">
+  <img src="./15.png" width="220">
+</div>
+
+<div align="center">
+  <img src="./16.png" width="220">
+  <img src="./17.png" width="220">
+  <img src="./18.png" width="220">
+</div>
 
 ---
 
 ## 🧠 AI Architecture
 
-DriveSkills uses a **multi-model architecture** instead of one large model, since road driving, parking, and in-cabin driver behavior are visually very different problems.
+DriveSkills uses a **multi-model architecture** instead of one large model, since road driving, parking, and in-cabin driver behavior are visually different computer vision tasks.
 
-| API | Models Used | Classes / Task |
-|---|---|---|
-| **Road Analysis API** | YOLOv8n (traffic objects) + Custom YOLOv8n (road signs) + YOLOv8n-seg (lane segmentation) | car, person, traffic_light, stop_sign, crosswalk, speed_bump, no_entry_sign, lane |
-| **Parking Evaluation API** | Car detection + Custom YOLOv8n (cone detection) | Vehicle alignment & stability relative to cones |
-| **Driver Monitoring API** | YOLOv8 (driver behavior) + EfficientNetB3 (seatbelt classification) | 13 behavior classes (texting, drowsiness, etc.) + seatbelt/no-seatbelt |
+| API                        | Models Used                            | Classes / Task                                     |
+| -------------------------- | -------------------------------------- | -------------------------------------------------- |
+| **Road Analysis API**      | YOLOv8n + Custom YOLOv8n + YOLOv8n-seg | Traffic objects, road signs, and lane segmentation |
+| **Parking Evaluation API** | Car detection + Custom YOLOv8n         | Vehicle alignment and stability relative to cones  |
+| **Driver Monitoring API**  | YOLOv8 + EfficientNetB3                | Driver behavior and seatbelt classification        |
 
-All models are hosted as **Hugging Face Spaces** and called from the Next.js frontend via the **Gradio Client**.
+### Road Analysis
 
-### Model Performance
+The Road Analysis API evaluates driving behavior using object detection and lane segmentation models.
 
-| Model | Precision | Recall | mAP@50 | mAP@50-95 |
-|---|---|---|---|---|
-| Road Signs Detection | 0.952 | 0.931 | 0.974 | 0.772 |
-| Lane Segmentation (mask) | 0.980 | 0.973 | 0.986 | 0.901 |
-| Cone Detection | 0.862 | 0.797 | 0.857 | 0.507 |
-| Driver Behavior Detection | 0.959 | 0.964 | 0.976 | 0.777 |
+The system detects relevant road elements such as:
 
-| Model | Accuracy | Precision | Recall | AUC |
-|---|---|---|---|---|
-| Seatbelt Classification (EfficientNetB3) | 0.74 | 0.82 | 0.76 | 0.81 |
+* Cars
+* People
+* Traffic lights
+* Stop signs
+* Crosswalks
+* Speed bumps
+* No-entry signs
+* Road lanes
 
-Models were adapted to the Jordanian driving context using a hybrid strategy: public datasets from **Roboflow Universe** combined with locally collected Jordanian street footage.
+### Parking Evaluation
 
-<!-- Add a model results / confusion matrix screenshot here -->
-<!-- ![Model Results](./screenshots/model-results.png) -->
+The Parking Evaluation API analyzes the vehicle's position and alignment relative to parking cones and evaluates parking performance.
+
+### Driver Monitoring
+
+The Driver Monitoring API analyzes driver behavior inside the vehicle and detects behaviors such as:
+
+* Mobile phone usage
+* Drowsiness
+* Other unsafe driving behaviors
+* Seatbelt usage
+
+The system combines YOLO-based behavior detection with an EfficientNetB3 classifier for seatbelt classification.
+
+---
+
+## 📊 Model Performance
+
+| Model                     | Precision | Recall | mAP@50 | mAP@50-95 |
+| ------------------------- | --------: | -----: | -----: | --------: |
+| Road Signs Detection      |     0.952 |  0.931 |  0.974 |     0.772 |
+| Lane Segmentation         |     0.980 |  0.973 |  0.986 |     0.901 |
+| Cone Detection            |     0.862 |  0.797 |  0.857 |     0.507 |
+| Driver Behavior Detection |     0.959 |  0.964 |  0.976 |     0.777 |
+
+### Seatbelt Classification
+
+| Model          | Accuracy | Precision | Recall |  AUC |
+| -------------- | -------: | --------: | -----: | ---: |
+| EfficientNetB3 |     0.74 |      0.82 |   0.76 | 0.81 |
+
+The models were adapted to the Jordanian driving context using a combination of publicly available datasets and locally collected Jordanian street footage.
+
+---
+
+## 🧮 Scoring System
+
+The practical examination combines automated AI analysis with manual examiner evaluation.
+
+```text
+Road Analysis              → 56 marks
+Parking Evaluation         →  5 marks
+Driver Monitoring          →  4 marks
+Manual Examiner Evaluation → 35 marks
+                              ───────
+                              100 marks
+```
+
+The final score is calculated from:
+
+```text
+AI Score      = 65%
+Examiner Score = 35%
+
+Final Score = AI Score + Examiner Score
+```
+
+This approach is designed to support the examiner rather than replace human judgment.
 
 ---
 
 ## 🛠️ Tech Stack
 
-**Frontend:** Next.js, React, TypeScript, Tailwind CSS
-**Backend / Database:** Supabase (Authentication + PostgreSQL)
-**AI Serving:** Hugging Face Spaces, Gradio Client
-**AI Models:** YOLOv8 / Ultralytics, TensorFlow / Keras (EfficientNetB3)
-**Deployment:** Vercel (frontend), Hugging Face Spaces (AI APIs)
+**Frontend**
+
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+
+**Backend / Database**
+
+* Supabase
+* PostgreSQL
+* Supabase Authentication
+
+**AI / Computer Vision**
+
+* YOLOv8
+* Ultralytics
+* TensorFlow
+* Keras
+* EfficientNetB3
+
+**AI Serving**
+
+* Hugging Face Spaces
+* Gradio Client
+
+**Deployment**
+
+* Vercel
+* Hugging Face Spaces
 
 ---
 
 ## 🏗️ System Architecture
 
+```text
+                         ┌──────────────────┐
+                         │       User       │
+                         └────────┬─────────┘
+                                  │
+                                  ▼
+                         ┌──────────────────┐
+                         │   Next.js Web    │
+                         │      App         │
+                         └────────┬─────────┘
+                                  │
+                     ┌────────────┴────────────┐
+                     │                         │
+                     ▼                         ▼
+              ┌─────────────┐          ┌──────────────┐
+              │  Supabase   │          │  AI APIs     │
+              │ Auth + DB   │          │ Hugging Face │
+              └─────────────┘          └──────┬───────┘
+                                              │
+                         ┌────────────────────┼────────────────────┐
+                         │                    │                    │
+                         ▼                    ▼                    ▼
+                  Road Analysis       Parking Evaluation    Driver Monitoring
+                         │                    │                    │
+                         └────────────────────┼────────────────────┘
+                                              │
+                                              ▼
+                                      Score Calculation
+                                              │
+                                              ▼
+                                      Final Exam Result
 ```
-User → Next.js Web App → Supabase (Auth + DB)
-                       ↓
-        ┌──────────────┼──────────────┐
-        ↓              ↓              ↓
-   Road Analysis   Parking API   Driver Monitoring
-   API (HF Space)  (HF Space)    API (HF Space)
-        ↓              ↓              ↓
-        └──────────────┼──────────────┘
-                        ↓
-              Score Calculation
-                        ↓
-              Supabase (Results) → Dashboard
-```
-
-<!-- Add the real architecture diagram screenshot here -->
-<!-- ![Architecture](./screenshots/architecture.png) -->
 
 ---
 
 ## 📁 Project Structure
 
-```
+```text
 app/
-  dashboard/          → Candidate dashboard
-  practical-test/     → Video upload & AI evaluation page
-  game/                → Educational driving game
-  chatbot/             → Chatbot assistant
-  instructors/         → Theory instructors section
-components/           → Reusable React components
+├── dashboard/              → Candidate dashboard
+├── practical-test/         → Video upload and AI evaluation
+├── game/                   → Educational driving game
+├── chatbot/                → Chatbot assistant
+└── instructors/            → Theory instructors section
+
+components/                 → Reusable React components
+
 lib/
-  supabase/            → Supabase client configuration
-  api/                 → AI API integration helpers
-scripts/               → SQL database scripts
+├── supabase/               → Supabase configuration
+└── api/                    → AI API integration
+
+scripts/                    → Database and SQL scripts
 ```
 
 ---
@@ -126,10 +259,22 @@ scripts/               → SQL database scripts
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js
-- A Supabase project (URL + anon key)
+
+* Node.js
+* npm
+* A Supabase project
+* Supabase URL and anonymous key
 
 ### Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/ShahdNazzal/DriveSkills.git
+cd DriveSkills
+```
+
+Install dependencies:
 
 ```bash
 npm install
@@ -139,7 +284,7 @@ npm install
 
 Create a `.env.local` file:
 
-```
+```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
@@ -150,9 +295,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 npm run dev
 ```
 
-The app will be available at `http://localhost:3000`.
+The application will be available at:
 
-### Build for Production
+```text
+http://localhost:3000
+```
+
+### Production Build
 
 ```bash
 npm run build
@@ -161,37 +310,56 @@ npm start
 
 ---
 
+## 🤖 AI APIs
 
+The project uses separate AI services for the three main computer vision tasks.
 
+### Road Analysis
 
+https://huggingface.co/spaces/shahednazzal/road_model
+
+### Parking Evaluation
+
+https://huggingface.co/spaces/shahednazzal/parking
+
+### Driver Behavior & Seatbelt
+
+https://huggingface.co/spaces/taimaa47/behavior-seatbelt
+
+The Next.js application communicates with the deployed AI services through the **Gradio Client**.
+
+---
 
 ## ⚠️ Limitations
 
-- Analyzes uploaded videos rather than real-time live streams
-- AI performance depends on video quality and lighting conditions
-- Not currently integrated with official government examination systems
-- Requires stable internet access (depends on Supabase and Hugging Face Spaces availability)
+* The system analyzes uploaded videos rather than live video streams.
+* AI performance depends on video quality, camera angle, lighting, and visibility.
+* The platform is not currently integrated with official government examination systems.
+* AI results are intended to support the examiner rather than replace human judgment.
+* The system requires an internet connection for cloud-based services and AI APIs.
+
+---
 
 ## 🔮 Future Work
 
-- Real-time multi-camera analysis
-- Mobile application for examiners
-- Larger Jordanian-specific dataset for improved model accuracy
-- Official integration with traffic department systems
+* Real-time multi-camera driving analysis
+* Mobile application for examiners
+* Larger Jordanian-specific datasets
+* Improved model performance through additional local training data
+* Real-time examiner assistance
+* Integration with official examination systems
+* Advanced analytics and examination reports
+
+---
+
+## 👥 Team
+
+**Graduation Project — Yarmouk University**
+
+Developed by a **team of 4 members** as part of the Data Science & Artificial Intelligence program.
 
 ---
 
 ## 📄 License
 
-<!-- Add your license here, e.g. MIT -->
-
-
-
-
-## 🚀 Hugging Face Spaces: 
-
-https://huggingface.co/spaces/shahednazzal/road_model
-
-https://huggingface.co/spaces/shahednazzal/parking
-
-https://huggingface.co/spaces/taimaa47/behavior-seatbelt
+This project was developed for educational and academic purposes as a graduation project.
