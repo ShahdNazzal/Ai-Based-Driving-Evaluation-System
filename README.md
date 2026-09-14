@@ -71,7 +71,7 @@ The system evaluates the practical exam out of **100 marks**:
 
 <div align="center">
   
-  <img src="./screenshots/10.png" width="220">
+
   <img src="./screenshots/11.png" width="220">
   <img src="./screenshots/9.png" width="220">
 </div>
